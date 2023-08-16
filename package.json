@@ -1,0 +1,36 @@
+{
+  "name": "simrs",
+  "version": "0.0.1",
+  "description": "wa bot for hospital information system",
+  "main": "./src/main.js",
+  "type": "module",
+  "scripts": {
+    "start": "node ./src/main.js",
+    "dev": "node ./src/main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xirf/bot-simrs.git"
+  },
+  "author": "xirf",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xirf/bot-simrs/issues"
+  },
+  "homepage": "https://github.com/xirf/bot-simrs#readme",
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "^6.4.0",
+    "dotenv": "^16.3.1",
+    "fastify": "^4.21.0",
+    "nodemon": "^3.0.1",
+    "pg": "^8.11.2",
+    "pino": "^8.15.0",
+    "pino-pretty": "^10.2.0",
+    "qrcode": "^1.5.3",
+    "qrcode-terminal": "^0.12.0",
+    "ts-node": "^10.9.1",
+    "tsc-watch": "^6.0.4",
+    "typescript": "^5.1.6"
+  }
+}
