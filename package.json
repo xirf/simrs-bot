@@ -3,10 +3,10 @@
   "version": "0.0.1",
   "description": "wa bot for hospital information system",
   "main": "./src/main.js",
-  "type": "module",
   "scripts": {
-    "start": "node ./src/main.js",
-    "dev": "node ./src/main.js"
+    "build": "tsc --build",
+    "start": "tsc --build && node ./dist/main.js",
+    "dev": "ts-node ./src/main.ts"
   },
   "repository": {
     "type": "git",
@@ -19,10 +19,13 @@
   },
   "homepage": "https://github.com/xirf/bot-simrs#readme",
   "dependencies": {
+    "@fastify/view": "^8.0.0",
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "^6.4.0",
     "dotenv": "^16.3.1",
+    "ejs": "^3.1.9",
     "fastify": "^4.21.0",
+    "link-preview-js": "^3.0.5",
     "nodemon": "^3.0.1",
     "pg": "^8.11.2",
     "pino": "^8.15.0",
