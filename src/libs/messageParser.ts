@@ -1,6 +1,6 @@
 import { downloadMediaMessage } from "@whiskeysockets/baileys";
 import client from "./whatsapp/client";
-
+import { writeFileSync } from 'fs'
 export interface ParsedMessage {
     sender: string;
     pushName: string;
@@ -10,20 +10,33 @@ export interface ParsedMessage {
 }
 
 export const parser = async (message): Promise<ParsedMessage> => {
-    const m = message.message
+    try {
 
-    const sender = message?.key?.remoteJid;
-    const pushName = message?.pushName;
 
-    const image = await downloadMediaMessage(message, 'buffer', {}, null) || null;
-    const video = await downloadMediaMessage(message, 'buffer', {}, null) || null;
-    const text = m.conversation || m.caption || m.extendedTextMessage?.text
+        const m = message.message
 
-    return {
-        sender,
-        pushName,
-        image,
-        video,
-        text
+        const sender = message?.key?.remoteJid;
+        const pushName = message?.pushName;
+
+        let image = null;
+        let video = null;
+
+        if (Object.keys(m)[ 0 ] == 'imageMessage') {
+            image = await downloadMediaMessage(m, 'buffer', {}, null);
+        } else if (Object.keys(m)[ 0 ] == 'videoMessage') {
+            video = await downloadMediaMessage(m, 'buffer', {}, null);
+        }
+
+        const text = m.conversation || m.caption || m.extendedTextMessage?.text || "no messages";
+        console.log(text)
+        return {
+            sender,
+            pushName,
+            image,
+            video,
+            text
+        }
+    } catch (error) {
+
     }
 }
