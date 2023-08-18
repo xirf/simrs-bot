@@ -60,6 +60,10 @@ class Connection extends EventEmitter {
             caption
         });
     }
+
+    public async updateMediaMessage() {
+        await this.socket.updateMediaMessage()
+    }
 }
 
 

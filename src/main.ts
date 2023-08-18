@@ -12,7 +12,7 @@ const start = async () => {
 				process.exit(1)
 			}
 
-			console.info(`server listening on ${address}`)
+			console.log("Server Started on ", address);
 		});
 }
 
