@@ -27,6 +27,7 @@
     "ejs": "^3.1.9",
     "fastify": "^4.21.0",
     "fastify-websocket": "^4.3.0",
+    "link-preview-js": "^3.0.5",
     "nodemon": "^3.0.1",
     "pg": "^8.11.2",
     "pino": "^8.15.0",

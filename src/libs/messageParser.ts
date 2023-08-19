@@ -28,7 +28,6 @@ export const parser = async (message): Promise<ParsedMessage> => {
         }
 
         const text = m.conversation || m.caption || m.extendedTextMessage?.text || "no messages";
-        console.log(text)
         return {
             sender,
             pushName,

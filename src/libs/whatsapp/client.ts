@@ -2,12 +2,14 @@ const EventEmitter = require('events');
 import makeWASocket, { DisconnectReason, useMultiFileAuthState, MessageType, JidWithDevice } from "@whiskeysockets/baileys";
 import { pino } from "pino";
 import { Boom } from "@hapi/boom";
+import fs from 'fs';
 
 class Connection extends EventEmitter {
     constructor() {
         super();
         this.state = null;
         this.socket = null;
+        this.i = 0;
     }
 
     async connect() {
@@ -44,11 +46,24 @@ class Connection extends EventEmitter {
         });
 
         this.socket.ev.on("messages.upsert", async (messages) => {
-            this.emit('messagesUpsert', messages.messages);
+
+            fs.writeFileSync(`./dump/message_${this.i}.json`, JSON.stringify(messages, null, 2));
+            this.i++;
+
+            const message = messages.messages[ 0 ];
+
+            if (!message || message.key.fromMe || message.key && message.key.remoteJid == 'status@broadcast') return;
+            // if (messages.message.ephemeralMessage) messages.message = messages.message.ephemeralMessage.message;
+
+            this.emit('messagesUpsert', message);
         });
     }
 
     public async sendMessage(jid, text: string) {
+        await this.socket.sendMessage(jid, { text });
+    }
+
+    public async sendList(jid: string, text: string, section: object) {
         await this.socket.sendMessage(jid, { text });
     }
 
@@ -64,6 +79,12 @@ class Connection extends EventEmitter {
     public async updateMediaMessage() {
         await this.socket.updateMediaMessage()
     }
+
+    public async read(keys) {
+        await this.socket.readMessages([ keys ]);
+    }
+
+
 }
 
 
