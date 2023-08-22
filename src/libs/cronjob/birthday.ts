@@ -1,6 +1,7 @@
 import DB from "../../db/database";
 import pino from "../logger"
 import fs from "fs"
+import client from "../whatsapp/client";
 
 const birthdayMessages: string[] = [
     "Selamat ulang tahun yang penuh berkah! 🎂🎉\n\nHari ini adalah hari spesial yang mengingatkan kita untuk merayakan hidup dan kesehatan. 💪🫶\n\nKami di tim kesehatan selalu mendukungmu dalam menjaga kesehatan. 💯\n\nSemoga kamu memiliki hari yang menyenangkan dan sehat selalu! 😊",
@@ -25,7 +26,7 @@ const birthdayMessages: string[] = [
     "Selamat ulang tahun! 🎂\n\nSemoga harimu dipenuhi dengan hal-hal yang indah dan momen-momen yang tak terlupakan. 🎉"
 ];
 
-export default async (client) => {
+export default async () => {
     return new Promise(async (res, rej) => {
         try {
 

@@ -3,6 +3,11 @@ import makeWASocket, { DisconnectReason, useMultiFileAuthState } from "@whiskeys
 import pino from "../logger";
 import { Boom } from "@hapi/boom";
 
+
+interface MediaMessageJSON {
+    url: URL
+}
+
 class Connection extends EventEmitter {
     constructor() {
         super();
@@ -57,12 +62,9 @@ class Connection extends EventEmitter {
         await this.socket.sendMessage(jid, { text });
     }
 
-    public async sendImage(jid: string, path: string, caption: string) {
+    public async sendImage(jid: string, path: Buffer | MediaMessageJSON, caption: string) {
         await this.socket.sendMessage(jid, {
-            image: {
-                url: path,
-            },
-
+            image: path,
             caption
         });
     }
