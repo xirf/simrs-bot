@@ -1,20 +1,13 @@
-import { DB } from "./db/database";
 import { hello } from "./libs/commands";
 import server, { apiRoutes } from "./libs/server";
 import client from "./libs/whatsapp/client";
 import { writeFileSync } from 'fs'
+import CronJob from "./libs/cronjob/worker"
 
 const start = async () => {
 	await client.connect();
 	await server().ready()
-	await DB.connect()
-		.then(() => {
-			console.log('Connected to the database successfully');
-		})
-		.catch((error) => {
-			console.error('Error connecting to the database:', error);
-			process.exit(1);
-		})
+	CronJob()
 
 	let mid = 0
 

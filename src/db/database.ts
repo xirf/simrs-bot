@@ -1,7 +1,7 @@
 import { Client, QueryResult } from 'pg';
-import fs from "fs"
+import pino from "../libs/logger"
 
-export const DB = new Client({
+const DB = new Client({
     host: 'localhost',
     port: 5432,
     database: 'simrs',
@@ -9,8 +9,13 @@ export const DB = new Client({
     password: 'rangga123',
 });
 
-type DatabaseResult = QueryResult<any>;
+DB.connect()
+    .then(() => {
+        pino.info('Connected to the database successfully');
+    })
+    .catch((error) => {
+        pino.fatal('Error connecting to the database:', error);
+        process.exit(1);
+    })
 
-export const parseResult = (result: DatabaseResult) => {
-    return result.rows
-};
+export default DB

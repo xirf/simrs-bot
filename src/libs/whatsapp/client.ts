@@ -1,15 +1,13 @@
 const EventEmitter = require('events');
-import makeWASocket, { DisconnectReason, useMultiFileAuthState, MessageType, JidWithDevice } from "@whiskeysockets/baileys";
-import { pino } from "pino";
+import makeWASocket, { DisconnectReason, useMultiFileAuthState } from "@whiskeysockets/baileys";
+import pino from "../logger";
 import { Boom } from "@hapi/boom";
-import fs from 'fs';
 
 class Connection extends EventEmitter {
     constructor() {
         super();
         this.state = null;
         this.socket = null;
-        this.i = 0;
     }
 
     async connect() {
@@ -19,12 +17,7 @@ class Connection extends EventEmitter {
             printQRInTerminal: true,
             syncFullHistory: false,
             auth: state,
-            logger: pino({
-                level: "debug",
-                transport: {
-                    target: "pino-pretty",
-                },
-            }),
+            logger: pino
         });
 
         this.socket.ev.on("creds.update", saveCreds);
@@ -46,15 +39,16 @@ class Connection extends EventEmitter {
         });
 
         this.socket.ev.on("messages.upsert", async (messages) => {
-
-            fs.writeFileSync(`./dump/message_${this.i}.json`, JSON.stringify(messages, null, 2));
-            this.i++;
-
             const message = messages.messages[ 0 ];
 
+            // Block messages from self and status
             if (!message || message.key.fromMe || message.key && message.key.remoteJid == 'status@broadcast') return;
-            // if (messages.message.ephemeralMessage) messages.message = messages.message.ephemeralMessage.message;
 
+            // block messages from group
+            if (message.key.remoteJid.endsWith('@g.us') || message.key.participant) return;
+
+
+            // emmit message to listener
             this.emit('messagesUpsert', message);
         });
     }
@@ -63,15 +57,12 @@ class Connection extends EventEmitter {
         await this.socket.sendMessage(jid, { text });
     }
 
-    public async sendList(jid: string, text: string, section: object) {
-        await this.socket.sendMessage(jid, { text });
-    }
-
     public async sendImage(jid: string, path: string, caption: string) {
         await this.socket.sendMessage(jid, {
             image: {
                 url: path,
             },
+
             caption
         });
     }
@@ -82,6 +73,10 @@ class Connection extends EventEmitter {
 
     public async read(keys) {
         await this.socket.readMessages([ keys ]);
+    }
+
+    public async onWhatsapp(jid) {
+        return await this.socket.onWhatsApp(jid)
     }
 
 

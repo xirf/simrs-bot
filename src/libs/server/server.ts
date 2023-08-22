@@ -1,17 +1,12 @@
 import Fastify, { FastifyServerOptions } from 'fastify';
 import websocket from "@fastify/websocket"
 import client from '../whatsapp/client';
-import { pino } from "pino";
+import pino from "../logger";
 
 
 const server = (opts?: FastifyServerOptions) => {
     const fastify = Fastify({
-        logger: {
-            level: 'debug',
-            transport: {
-                target: 'pino-pretty'
-            }
-        }
+        logger: pino
     });
     fastify.register(websocket);
 
