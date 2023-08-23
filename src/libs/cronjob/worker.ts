@@ -6,8 +6,8 @@ import konsul from './konsul';
 
 export default () => {
     pino.info("Starting CronJob task!")
-    cron.schedule('*/30 * * * * *', () => {  // Every 30 seconds, every minute, every hour, every day
-        // birthday()
-        konsul()
+    cron.schedule('*/30 * * * * *', () => {  // Every second, every minute, between 07:00 and 07:59, every day
+        birthday()
+        // konsul()
     });
 }

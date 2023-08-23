@@ -19,18 +19,7 @@
     "rootDir": "src",
     "skipLibCheck": true,
     "target": "ES2020",
-    "baseUrl": "./",
-    "paths": {
-      "@src/*": [
-        "src/*"
-      ],
-      "@assets/*": [
-        "assets/*"
-      ],
-      "@libs/*": [
-        "src/libs/*"
-      ]
-    }
+    "baseUrl": ".",
   },
   "exclude": [
     "node_modules"
