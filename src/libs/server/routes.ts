@@ -14,13 +14,13 @@ export const apiRoutes = (fastify: FastifyInstance) => {
         })
 
         app.post('/sendImage', async (request, reply) => {
-            let { jid, path, caption } = request.body as { jid: string, path: string, caption: string };
+            let { jid, path, caption } = request.body as { jid: string, path: URL, caption: string };
 
             if (!jid || !path) reply.send({ status: 'error', message: 'jid, path and caption are required' });
-
             if (!caption) caption = '';
 
-            await connection.sendImage(jid, path, caption);
+
+            await connection.sendImage(jid, { url: path }, caption);
 
             reply.send({ status: 'ok' });
         })

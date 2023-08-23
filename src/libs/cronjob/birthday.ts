@@ -2,6 +2,8 @@ import DB from "../../db/database";
 import pino from "../logger"
 import fs from "fs"
 import client from "../whatsapp/client";
+import { QueryResult } from "pg"
+
 
 const birthdayMessages: string[] = [
     "Selamat ulang tahun yang penuh berkah! 🎂🎉\n\nHari ini adalah hari spesial yang mengingatkan kita untuk merayakan hidup dan kesehatan. 💪🫶\n\nKami di tim kesehatan selalu mendukungmu dalam menjaga kesehatan. 💯\n\nSemoga kamu memiliki hari yang menyenangkan dan sehat selalu! 😊",
@@ -36,7 +38,7 @@ export default async () => {
             const todayMonth = today.getMonth() + 1;
             const todayDate = today.getDate();
 
-            const pasiens = await DB.query(
+            const pasiens: QueryResult<any> = await DB.query(
                 `SELECT telepon, nama FROM "public"."pasien" WHERE EXTRACT(MONTH FROM tgl_lahir) = $1 AND EXTRACT(DAY FROM tgl_lahir) = $2`,
                 [ todayMonth, todayDate ]
             );

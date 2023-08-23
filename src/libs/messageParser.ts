@@ -1,6 +1,5 @@
 import { downloadMediaMessage } from "@whiskeysockets/baileys";
 import client from "./whatsapp/client";
-import { writeFileSync } from 'fs'
 export interface ParsedMessage {
     sender: string;
     pushName: string;
@@ -11,10 +10,7 @@ export interface ParsedMessage {
 
 export const parser = async (message): Promise<ParsedMessage> => {
     try {
-
-
         const m = message.message
-
         const sender = message?.key?.remoteJid;
         const pushName = message?.pushName;
 

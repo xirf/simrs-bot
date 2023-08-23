@@ -9,10 +9,7 @@ export const hello = async (message): Promise<void> => {
     if (sender) {
 
         const lastMessageQuery: QueryResult<any> = await DB.query(`SELECT "last_message" FROM "public"."whatsapp" WHERE "number" = '${sender}';`)
-
         const lastMessage = lastMessageQuery.rows
-        console.log(lastMessageQuery);
-        fs.writeFileSync("lastMessage.json", JSON.stringify(lastMessageQuery.rows, null, 2))
 
         if (!lastMessage ||
             lastMessage.length < 1 ||
