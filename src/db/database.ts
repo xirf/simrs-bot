@@ -1,20 +1,22 @@
-import { Client, QueryResult } from 'pg';
+import { Client } from 'pg';
 import pino from "../libs/logger"
+import dotenv from "dotenv"
+
+dotenv.config();
 
 const DB = new Client({
-    host: 'localhost',
-    port: 5432,
-    database: 'simrs',
-    user: 'postgres',
-    password: 'rangga123',
-});
-
-DB.connect()
+    host: process.env.DB_URL,
+    port: process.env.DB_PORT,
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+}).connect()
     .then(() => {
-        pino.info('Connected to the database successfully');
+        pino.info('Database connection established')
     })
     .catch((error) => {
-        pino.fatal('Error connecting to the database:', error);
+        pino.info("Failed to set up database connection")
+        pino.fatal(error);
         process.exit(1);
     })
 

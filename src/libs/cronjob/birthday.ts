@@ -2,13 +2,11 @@ import DB from "../../db/database";
 import pino from "../logger"
 import fs from "fs"
 import client from "../whatsapp/client";
-import { QueryResult } from "pg"
 import cardParser from "../../utils/cardParser";
 
 export default async () => {
     return new Promise(async (res, rej) => {
         try {
-
 
             const today = new Date();
             const todayMonth = today.getMonth() + 1;

@@ -36,14 +36,16 @@ export default async () => {
                             let message = cardParser(konsulMessage.rows[ 0 ].pengingat_konsul, {
                                 nama: p.nama,
                                 tgl: formatDate(p.tgl_kontrol),
-                                jam: p.jam.substring(0, 5),
+                                jam: p.jam_mulai.substring(0, 5),
                                 poli: p.nama_unit,
                             })
 
                             await client.sendMessage(tel, message);
-                            pino.info("Succesfully Send Birthday message to " + p.nama)
+                            pino.info("Succesfully Consul notification message to " + p.nama)
                         } catch (error) {
-                            pino.error("Failed to send birthday card to " + p.nama, error)
+                            pino.error("Failed to send Consul notification to " + p.nama)
+                            pino.error(error)
+
                         }
 
                     } else {

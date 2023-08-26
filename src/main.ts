@@ -1,36 +1,39 @@
-import { hello } from "./libs/commands";
 import server, { apiRoutes } from "./libs/server";
 import client from "./libs/whatsapp/client";
-import { writeFileSync } from 'fs'
 import CronJob from "./libs/cronjob/worker"
+
+import { hello } from "./libs/commands";
+import pino from "./libs/logger";
+
+require("dotenv").config();
 
 const start = async () => {
 	await client.connect();
 	await server().ready()
+	apiRoutes(server())
+
+
 	CronJob()
 
-	let mid = 0
 
 	client.on('messagesUpsert', async (m) => {
-		writeFileSync(`dump/mid_${mid}.json`, JSON.stringify(m, null, 2))
-		mid++;
-
 		try {
-			await hello(m);
+			// handle message
+
 		} catch (error) {
-			console.error(error)
-		} finally {
-			client.read(m.key);
+			// if error
 		}
 	})
 
-	apiRoutes(server())
-		.listen({ port: 3000, }, (err, address) => {
-			if (err) {
-				console.error(err)
-				process.exit(1)
-			}
-		});
+
+	server().listen({ port: 3000, }, (err, address) => {
+		if (err) {
+			pino.info("Failed to start server")
+			pino.fatal(err);
+			process.exit(1);
+		}
+	});
 }
+
 
 start();

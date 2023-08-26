@@ -1,5 +1,5 @@
 const EventEmitter = require('events');
-import makeWASocket, { DisconnectReason, useMultiFileAuthState } from "@whiskeysockets/baileys";
+import makeWASocket, { DisconnectReason, useMultiFileAuthState, isJidBroadcast, Browsers, isJidGroup } from "@whiskeysockets/baileys";
 import pino from "../logger";
 import { Boom } from "@hapi/boom";
 
@@ -22,6 +22,8 @@ class Connection extends EventEmitter {
             printQRInTerminal: true,
             syncFullHistory: false,
             auth: state,
+            browser: Browsers.appropriate('RSU Darmayu'),
+            shouldIgnoreJid: jid => isJidBroadcast(jid) || isJidGroup(jid),
             logger: pino
         });
 
@@ -36,7 +38,7 @@ class Connection extends EventEmitter {
 
                 if (shouldReconnect) {
                     console.info("Reconnecting...");
-                    this.connect();
+                    setTimeout(() => this.connect(), 2000);
                 }
             } else if (connection === "open") {
                 this.emit('connectionOpen');
@@ -45,15 +47,10 @@ class Connection extends EventEmitter {
 
         this.socket.ev.on("messages.upsert", async (messages) => {
             const message = messages.messages[ 0 ];
-
-            // Block messages from self and status
             if (!message || message.key.fromMe || message.key && message.key.remoteJid == 'status@broadcast') return;
 
-            // block messages from group
-            if (message.key.remoteJid.endsWith('@g.us') || message.key.participant) return;
-
-
-            // emmit message to listener
+            await this.socket.readMessages(message.key);
+            await this.socket.sendPresenceUpdate('available', message.key.id) 
             this.emit('messagesUpsert', message);
         });
     }
