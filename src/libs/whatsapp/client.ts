@@ -1,8 +1,9 @@
 const EventEmitter = require('events');
-import makeWASocket, { DisconnectReason, useMultiFileAuthState, isJidBroadcast, Browsers, isJidGroup } from "@whiskeysockets/baileys";
+import makeWASocket, { DisconnectReason, WAMessageKey, delay, isJidBroadcast, Browsers, isJidGroup, makeCacheableSignalKeyStore, AnyMessageContent } from "@whiskeysockets/baileys";
 import pino from "../logger";
 import { Boom } from "@hapi/boom";
-
+import authClient from "./sessions"
+import DB from "src/db/database";
 
 interface MediaMessageJSON {
     url: URL
@@ -16,30 +17,37 @@ class Connection extends EventEmitter {
     }
 
     async connect() {
-        const { state, saveCreds } = await useMultiFileAuthState("sessions");
+        const { state, saveState, clearState } = await authClient(DB);
 
         this.socket = makeWASocket({
             printQRInTerminal: true,
             syncFullHistory: false,
-            auth: state,
-            browser: Browsers.appropriate('RSU Darmayu'),
+            auth: {
+                creds: state.creds,
+                keys: makeCacheableSignalKeyStore(state.keys, pino)
+            },
+            browser: Browsers.appropriate('Brave'),
             shouldIgnoreJid: jid => isJidBroadcast(jid) || isJidGroup(jid),
             logger: pino
         });
 
-        this.socket.ev.on("creds.update", saveCreds);
+        this.socket.ev.on("creds.update", saveState);
 
         this.socket.ev.on("connection.update", (update) => {
             const { connection, lastDisconnect } = update;
             if (connection === "close") {
                 const shouldReconnect = (lastDisconnect.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
 
-                console.info({ shouldReconnect }, "Connection Closed");
+                console.warn("Connection closed");
 
                 if (shouldReconnect) {
                     console.info("Reconnecting...");
-                    setTimeout(() => this.connect(), 2000);
+                    setTimeout(() => this.connect(), 5000);
+                } else {
+                    pino.error(lastDisconnect.error)
+                    process.exit(0);
                 }
+
             } else if (connection === "open") {
                 this.emit('connectionOpen');
             }
@@ -50,28 +58,26 @@ class Connection extends EventEmitter {
             if (!message || message.key.fromMe || message.key && message.key.remoteJid == 'status@broadcast') return;
 
             await this.socket.readMessages(message.key);
-            await this.socket.sendPresenceUpdate('available', message.key.id) 
+            await this.socket.sendPresenceUpdate('available', message.key.id)
             this.emit('messagesUpsert', message);
         });
+    } s
+
+    public async reply(key: WAMessageKey, msg: AnyMessageContent) {
+
+        const jid = key.remoteJid as string
+        await this.readMessages?.([ key ])
+        await this.socket.presenceSubscribe?.(jid)
+        await delay(500)
+
+        await this.socket.sendPresenceUpdate?.('composing', jid)
+        await delay(2000)
+        await this.socket.sendPresenceUpdate?.('paused', jid)
+        await this.socket.sendMessage(jid, msg)
     }
 
-    public async sendMessage(jid, text: string) {
-        await this.socket.sendMessage(jid, { text });
-    }
-
-    public async sendImage(jid: string, path: Buffer | MediaMessageJSON, caption: string) {
-        await this.socket.sendMessage(jid, {
-            image: path,
-            caption
-        });
-    }
-
-    public async updateMediaMessage() {
-        await this.socket.updateMediaMessage()
-    }
-
-    public async read(keys) {
-        await this.socket.readMessages([ keys ]);
+    public async sendMessage(jid: string, msg: AnyMessageContent) {
+        await this.socket.sendMessage(jid, msg)
     }
 
     public async onWhatsapp(jid) {

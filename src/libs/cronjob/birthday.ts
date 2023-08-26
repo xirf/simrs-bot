@@ -31,9 +31,12 @@ export default async () => {
 
                         try {
                             if (birthdayMessages.rows[ 0 ].kartu_ultah) {
-                                await client.sendImage(tel, { url: birthdayMessages.rows[ 0 ].kartu_ultah }, msg);
+                                await client.sendMessage(tel, {
+                                    image: { url: birthdayMessages.rows[ 0 ].kartu_ultah },
+                                    caption: msg,
+                                });
                             } else {
-                                await client.sendMessage(tel, msg);
+                                await client.sendMessage(tel, { text: msg });
                             }
 
                             pino.info("Succesfully Send Birthday message to " + p.nama)
