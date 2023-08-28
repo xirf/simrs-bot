@@ -40,7 +40,7 @@ export default async () => {
                                 poli: p.nama_unit,
                             })
 
-                            await client.sendMessage(tel, message);
+                            await client.sendMessage(tel, { text: message });
                             pino.info("Succesfully Consul notification message to " + p.nama)
                         } catch (error) {
                             pino.error("Failed to send Consul notification to " + p.nama)

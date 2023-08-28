@@ -5,7 +5,7 @@ declare type RoutesType = {
     name: string;
     messageText: string;
     collect: any[];
-    beforeCollect?: BeforeCollect;
+    beforeCollect?: beforeCollect;
     beforeSend?: BeforeSend;
     next?: RoutesType[];
 }

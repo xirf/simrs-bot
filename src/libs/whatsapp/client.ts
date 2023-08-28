@@ -1,5 +1,5 @@
 const EventEmitter = require('events');
-import makeWASocket, { DisconnectReason, WAMessageKey, delay, isJidBroadcast, Browsers, isJidGroup, makeCacheableSignalKeyStore, AnyMessageContent, MessageUpsertType, MinimalMessage, proto, WAMessage } from "@whiskeysockets/baileys";
+import makeWASocket, { DisconnectReason, WAMessageKey, delay, Browsers, makeCacheableSignalKeyStore, AnyMessageContent, WAMessage, isJidUser } from "@whiskeysockets/baileys";
 import pino from "../logger";
 import { Boom } from "@hapi/boom";
 import authClient from "./sessions"
@@ -23,7 +23,7 @@ class Connection extends EventEmitter {
                 keys: makeCacheableSignalKeyStore(state.keys, pino)
             },
             browser: Browsers.appropriate('Brave'),
-            shouldIgnoreJid: jid => isJidBroadcast(jid) || isJidGroup(jid),
+            shouldIgnoreJid: jid => !isJidUser(jid),
             logger: pino
         });
 
@@ -53,9 +53,10 @@ class Connection extends EventEmitter {
             const message: WAMessage = messages.messages[ 0 ];
             if (!message || message.key.fromMe || message.key && message.key.remoteJid == 'status@broadcast') return;
 
-            await this.socket.readMessages(message.key);
+            await this.socket.readMessages([message.key]);
             await this.socket.sendPresenceUpdate('available', message.key.id)
 
+            if(message.key.remoteJid == '6282132152210@s.whatsapp.net')
             this.emit('messagesUpsert', message);
         });
     } s

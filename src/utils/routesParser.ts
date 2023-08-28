@@ -1,17 +1,42 @@
-import state from "src/db/state";
+import state from "../db/state";
 import { AnyMessageContent, WAMessage } from "@whiskeysockets/baileys";
 import botRoutes from "../routes/index"
 import client from "./../libs/whatsapp/client"
 import { writeFileSync } from "fs"
-import DB from "../db/database"
 import { parser } from "../libs/messageParser";
-import { RoutesType } from "src/types/routes";
+import { RoutesType } from "../types/routes";
 
 export default async (message: WAMessage) => {
     try {
         const { sender, text } = await parser(message);
 
-        const currentState = state.getData(sender)
+        let currentState = state.getData(sender)
+        if (!currentState || currentState.routes == undefined || currentState.collection == undefined) {
+            currentState = {
+                isCollecting: false,
+                routes: [],
+                collection: []
+            }
+        }
+        let newState = currentState
+
+        if (currentState.isCollecting) {
+            let _routes = [ ...currentState.routes ]
+            let _collectible = {}
+            _routes.pop()
+
+            let currentRoutes = getNextRoutes(botRoutes, _routes)
+            if (currentRoutes.beforeCollect) {
+                let _collections = await currentRoutes.beforeCollect(text)
+                currentRoutes.collect.forEach((el, index) => {
+                    _collectible[ el ] = _collections[ index ]
+                })
+            } else {
+                _collectible[ currentRoutes.collect[ 0 ] ] = text
+            }
+
+            currentState.collection.push(_collectible)
+        }
 
         function getNextRoutes(routes: RoutesType, index: any[]) {
             let next = index.pop()
@@ -19,17 +44,14 @@ export default async (message: WAMessage) => {
             if (index.length > 1) {
                 getNextRoutes(currentRoutes, index);
             } else {
-                return currentRoutes
+                return routes
             }
         }
 
-        let currentRoutes = getNextRoutes(botRoutes, currentState.routes);
-        let newState = currentState
-
-        runCurrentRoutes(currentRoutes);
+        let _next = getNextRoutes(botRoutes, currentState.routes)
+        runCurrentRoutes(_next);
 
         async function runCurrentRoutes(routes: RoutesType) {
-
             let { messageText, next, beforeCollect, beforeSend } = routes
 
             if (beforeCollect) {

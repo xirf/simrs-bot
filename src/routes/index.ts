@@ -16,7 +16,7 @@ async function beforeSend({ messageText, fullMessage, collection, nextRoutes }: 
     const lastMessageQuery = await DB.query(`SELECT "last_message" FROM "public"."whatsapp" WHERE "number" = '${sender}';`)
     const lastMessage = lastMessageQuery.rows
 
-    if (!lastMessage || lastMessage.length < 1 || (new Date(lastMessage[ 0 ].last_message).toLocaleDateString() < new Date().toLocaleDateString())) {
+    // if (!lastMessage || lastMessage.length < 1 || (new Date(lastMessage[ 0 ].last_message).toLocaleDateString() < new Date().toLocaleDateString())) {
 
         let choices = nextRoutes.map((val, index) => {
             return `${index + 1}. ${val.name}`
@@ -25,9 +25,9 @@ async function beforeSend({ messageText, fullMessage, collection, nextRoutes }: 
         text = messageText.replace("{{user}}", pushName).replace("{{time}}", getTime()).replace("{{routes}}", choices)
 
         return { text }
-    } else {
-        return null
-    }
+    // } else {
+        // return null
+    // }
 }
 
 const routes: RoutesType = {
