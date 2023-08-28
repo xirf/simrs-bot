@@ -17,6 +17,6 @@ interface BeforeSendParams {
     nextRoutes: RoutesType[]
 }
 
-declare type BeforeSend = ({ messageText, collection, nextRoutes, sender }: BeforeSendParams) => Promise<AnyMessageContent | null>
+declare type BeforeSend = ({ messageText, fullMessage, collection, nextRoutes }: BeforeSendParams) => Promise<AnyMessageContent | null>
 
 declare type beforeCollect = (message: string) => Promise<any[]>
