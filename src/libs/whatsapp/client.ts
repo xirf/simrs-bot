@@ -1,13 +1,9 @@
 const EventEmitter = require('events');
-import makeWASocket, { DisconnectReason, WAMessageKey, delay, isJidBroadcast, Browsers, isJidGroup, makeCacheableSignalKeyStore, AnyMessageContent } from "@whiskeysockets/baileys";
+import makeWASocket, { DisconnectReason, WAMessageKey, delay, isJidBroadcast, Browsers, isJidGroup, makeCacheableSignalKeyStore, AnyMessageContent, MessageUpsertType, MinimalMessage, proto, WAMessage } from "@whiskeysockets/baileys";
 import pino from "../logger";
 import { Boom } from "@hapi/boom";
 import authClient from "./sessions"
-import DB from "src/db/database";
-
-interface MediaMessageJSON {
-    url: URL
-}
+import DB from "../../db/database";
 
 class Connection extends EventEmitter {
     constructor() {
@@ -54,14 +50,17 @@ class Connection extends EventEmitter {
         });
 
         this.socket.ev.on("messages.upsert", async (messages) => {
-            const message = messages.messages[ 0 ];
+            const message: WAMessage = messages.messages[ 0 ];
             if (!message || message.key.fromMe || message.key && message.key.remoteJid == 'status@broadcast') return;
 
             await this.socket.readMessages(message.key);
             await this.socket.sendPresenceUpdate('available', message.key.id)
+
             this.emit('messagesUpsert', message);
         });
     } s
+
+
 
     public async reply(key: WAMessageKey, msg: AnyMessageContent) {
 

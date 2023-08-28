@@ -8,7 +8,7 @@ export const apiRoutes = (fastify: FastifyInstance) => {
 
             if (!jid || !text) reply.send({ status: 'error', message: 'jid and text are required' });
 
-            await connection.sendMessage(jid, text);
+            await connection.sendMessage(jid, { text });
 
             reply.send({ status: 'ok' });
         })

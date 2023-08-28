@@ -1,8 +1,6 @@
 import server, { apiRoutes } from "./libs/server";
 import client from "./libs/whatsapp/client";
 import CronJob from "./libs/cronjob/worker"
-
-import { hello } from "./libs/commands";
 import pino from "./libs/logger";
 
 require("dotenv").config();
@@ -16,12 +14,11 @@ const start = async () => {
 	CronJob()
 
 
-	client.on('messagesUpsert', async (m) => {
+	client.on('messagesUpsert', async (message) => {
 		try {
-			// handle message
-
+			console.log(message)
 		} catch (error) {
-			// if error
+			console.error(error)
 		}
 	})
 

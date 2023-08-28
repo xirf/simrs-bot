@@ -18,7 +18,8 @@ export const hello = async (message): Promise<void> => {
             )
         ) {
 
-            await client.sendMessage(sender, `
+            await client.sendMessage(sender, {
+                text: `
 Halo ${pushName}, selamat datang. apakah ada yang bisa kami bantu?.
 
 Silahkan pilih layanan yang anda inginkan:
@@ -28,7 +29,7 @@ Silahkan pilih layanan yang anda inginkan:
 4. Cek Antrian
 
 Silahkan ketik angka yang sesuai dengan layanan yang anda inginkan 😊.
-`)
+`})
         }
 
         await DB.query(` INSERT INTO "public"."whatsapp" (number, last_message) VALUES ($1, $2) ON CONFLICT (number) DO UPDATE SET last_message = EXCLUDED.last_message;`, [ sender, (new Date()) ]).then(console.info).catch(console.error)
