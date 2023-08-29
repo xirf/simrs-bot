@@ -17,18 +17,16 @@ const start = async () => {
 
 	client.on('messagesUpsert', async (message) => {
 		try {
-			console.log("==============", JSON.stringify(message))
 			routesParser(message)
 		} catch (error) {
-			// console.error(error)
+			pino.error(error, "Something went wrong when handling the message")
 		}
 	})
 
 
 	server().listen({ port: 3000, }, (err, address) => {
 		if (err) {
-			pino.info("Failed to start server")
-			pino.fatal(err);
+			pino.fatal(err, "Failed to start server");
 			process.exit(1);
 		}
 	});

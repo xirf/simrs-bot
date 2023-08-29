@@ -9,12 +9,9 @@ import { RoutesType } from "../types/routes";
 export default async (message: WAMessage) => {
     try {
         const { sender, text } = await parser(message);
-        console.log("New Message from", sender)
-
         let currentState = await state.getData(sender);
-        console.log("State from db", currentState)
 
-        if (!currentState || currentState.routes == undefined || currentState.collection == undefined) {
+        if (!currentState || currentState.routes === undefined || currentState.collection === undefined) {
             currentState = {
                 isCollecting: false,
                 routes: [],
@@ -22,8 +19,9 @@ export default async (message: WAMessage) => {
             };
         }
 
+        
         let newState = { ...currentState };
-        console.log("Cloned state", newState)
+
 
         if (newState.isCollecting) {
             let _routes = [ ...newState.routes ];
@@ -69,8 +67,10 @@ export default async (message: WAMessage) => {
             }
         }
 
+
         let _next = getNextRoutes(botRoutes, newState.routes)
         runCurrentRoutes(_next);
+
 
         async function runCurrentRoutes(routes: RoutesType) {
             console.log(JSON.stringify(routes))
@@ -79,10 +79,7 @@ export default async (message: WAMessage) => {
 
             if (beforeCollect) {
                 let _newState = await beforeCollect(text)
-                newState = {
-                    routes: [ ...newState.routes ],
-                    collection: [ ...newState.collection, ..._newState ]
-                }
+                newState.collection = [ ...newState.collection, ..._newState ]
                 state.setData(sender, newState)
             }
 
@@ -98,7 +95,6 @@ export default async (message: WAMessage) => {
             }
 
             newState.isCollecting = true;
-
             await state.setData(sender, newState)
             await client.reply(message.key, _message)
         }
@@ -107,5 +103,4 @@ export default async (message: WAMessage) => {
     } catch (error) {
         console.log(error)
     }
-
 }
