@@ -34,10 +34,10 @@ class Connection extends EventEmitter {
             if (connection === "close") {
                 const shouldReconnect = (lastDisconnect.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
 
-                console.warn("Connection closed");
+                pino.warn("Connection closed");
 
                 if (shouldReconnect) {
-                    console.info("Reconnecting...");
+                    pino.info("Reconnecting...");
                     setTimeout(() => this.connect(), 5000);
                 } else {
                     pino.error(lastDisconnect.error)

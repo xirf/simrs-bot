@@ -2,7 +2,6 @@ import state from "../db/state";
 import { AnyMessageContent, WAMessage } from "@whiskeysockets/baileys";
 import botRoutes from "../routes/index"
 import client from "./../libs/whatsapp/client"
-import { writeFileSync } from "fs"
 import { parser } from "../libs/messageParser";
 import { RoutesType } from "../types/routes";
 
@@ -15,66 +14,85 @@ export default async (message: WAMessage) => {
             currentState = {
                 isCollecting: false,
                 routes: [],
-                collection: []
+                collection: {}
             };
         }
 
-        
+
         let newState = { ...currentState };
 
 
         if (newState.isCollecting) {
             let _routes = [ ...newState.routes ];
-            let _collectible = {};
-            _routes.pop();
+            let _collectible = newState.collection;
 
-            let currentRoutes = getNextRoutes(botRoutes, _routes);
+            let currentRoutes = await getNextRoutes(botRoutes, _routes);
 
-            if (currentRoutes.beforeCollect) {
-                let _collections = await currentRoutes.beforeCollect(text);
-                currentRoutes.collect.forEach((el, index) => {
-                    _collectible[ el ] = _collections[ index ];
-                });
+            console.log("Collecting for routes", JSON.stringify(currentRoutes))
+
+            if (currentRoutes.collect.length === 0) {
+                newState.push(0)
+                return;
             } else {
-                _collectible[ currentRoutes.collect[ 0 ] ] = text;
-            }
-
-            if (currentRoutes.beforeNext) {
-                newState.routes.push(await currentRoutes.beforeNext(text));
-            } else {
-                let _isMatch = text.match(/\b\d+\b/g);
-                console.log("_isMatch", _isMatch)
-                if (_isMatch && parseInt(_isMatch[ 0 ]) <= currentRoutes.next.length) {
-                    newState.routes.push(parseInt(_isMatch[ 0 ]) - 1);
+                if (currentRoutes.beforeCollect) {
+                    let _collections = await currentRoutes.beforeCollect(text);
+                    currentRoutes.collect.forEach((el, index) => {
+                        _collectible[ el ] = _collections[ index ];
+                    });
                 } else {
-                    newState.routes.push(0);
+                    _collectible[ currentRoutes.collect[ 0 ] ] = text;
                 }
 
+                if (currentRoutes.beforeNext) {
+                    newState.routes.push(await currentRoutes.beforeNext(text));
+                } else {
+                    let _isMatch = text.match(/\b\d+\b/g);
+                    if (_isMatch && parseInt(_isMatch[ 0 ]) <= currentRoutes.next.length) {
+                        newState.routes.push(parseInt(_isMatch[ 0 ]) - 1);
+                    } else {
+                        newState.routes.push(0);
+                    }
+                }
             }
-            newState.collection.push(_collectible);
         }
 
 
         function getNextRoutes(routes: RoutesType, index: any[]) {
-            if (index.length < 1) return routes
-            else {
-                let next = [ ...index ].pop()
-                if (routes.next[ next ]) {
-                    let currentRoutes: RoutesType = routes.next[ next ]
-                    if (index.length > 1) getNextRoutes(currentRoutes, index);
-                    else return currentRoutes
-                } else return botRoutes
-            }
+            return new Promise<RoutesType>(async (resolve, reject) => {
+
+                let selectedRoutes: RoutesType
+                if (index.length === 0) {
+                    selectedRoutes = routes
+                } else {
+                    let next = index.pop()
+                    if (routes.next[ next ]) {
+                        let currentRoutes: RoutesType = routes.next[ next ]
+                        if (index.length > 0 && currentRoutes.next.length > 0) {
+                            selectedRoutes = await getNextRoutes(currentRoutes, index)
+                        }
+                        else {
+                            selectedRoutes = currentRoutes
+                        }
+                    } else {
+                        selectedRoutes = botRoutes
+                    }
+                }
+
+                resolve(selectedRoutes)
+            })
         }
 
 
-        let _next = getNextRoutes(botRoutes, newState.routes)
+        let _next = await getNextRoutes(botRoutes, [ ...newState.routes ])
         runCurrentRoutes(_next);
 
 
         async function runCurrentRoutes(routes: RoutesType) {
-            console.log(JSON.stringify(routes))
-            if (!routes) routes = botRoutes[ 0 ]
+
+            if (!routes) {
+                return;
+            };
+
             let { messageText, next, beforeCollect, beforeSend } = routes
 
             if (beforeCollect) {

@@ -1,7 +1,6 @@
 import { AnyMessageContent, WAMessage } from "@whiskeysockets/baileys";
 
 declare type RoutesType = {
-    id: string | number;
     name: string;
     messageText: string;
     collect: any[];

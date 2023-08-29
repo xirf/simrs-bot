@@ -1,7 +1,7 @@
 import DB from "./database";
+import pino from "../libs/logger"
 class UserState {
     private static instance: UserState;
-    private data: Record<string, any> = {};
 
     private constructor() { }
 
@@ -13,7 +13,6 @@ class UserState {
     }
 
     async setData(key: string, value: any) {
-        this.data[ key ] = value;
         try {
             await DB.query(`
                 INSERT INTO public.chat_state (id, state)
@@ -22,20 +21,17 @@ class UserState {
                 DO UPDATE SET state = $2;
             `, [ key, value ]);
         } catch (error) {
-            console.error('Error in setData:', error);
+            pino.error(error, `Failed to insert state to DB for ${key}`)
         }
     }
 
     async getData(key: string) {
         try {
             const result = await DB.query("SELECT state FROM public.chat_state WHERE id = $1", [ key ]);
-            if (result.rows.length > 0) {
-                return JSON.parse(result.rows[ 0 ].state);
-            } else {
-                return this.data[ key ]
-            }
+            return JSON.parse(result.rows[ 0 ].state);
         } catch (error) {
-            return this.data[ key ]
+            pino.warn(error, `Can't find state from ${key}, set the state  to empty`)
+            return {}
         }
     }
 }
