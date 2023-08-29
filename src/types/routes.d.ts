@@ -7,6 +7,7 @@ declare type RoutesType = {
     collect: any[];
     beforeCollect?: beforeCollect;
     beforeSend?: BeforeSend;
+    beforeNext?: BeforeNext;
     next?: RoutesType[];
 }
 
@@ -16,6 +17,8 @@ interface BeforeSendParams {
     collection: any[];
     nextRoutes: RoutesType[]
 }
+
+declare type BeforeNext = (text:string)=>Promise<number>
 
 declare type BeforeSend = ({ messageText, fullMessage, collection, nextRoutes }: BeforeSendParams) => Promise<AnyMessageContent | null>
 

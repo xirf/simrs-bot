@@ -17,7 +17,7 @@ const start = async () => {
 
 	client.on('messagesUpsert', async (message) => {
 		try {
-			// console.log(message)
+			console.log("==============", JSON.stringify(message))
 			routesParser(message)
 		} catch (error) {
 			// console.error(error)
