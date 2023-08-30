@@ -3,6 +3,7 @@ import client from "./libs/whatsapp/client";
 import CronJob from "./libs/cronjob/worker"
 import pino from "./libs/logger";
 import routesParser from "./utils/routesParser";
+import { WAMessage, proto } from "@whiskeysockets/baileys";
 
 require("dotenv").config();
 
@@ -15,9 +16,13 @@ const start = async () => {
 	CronJob()
 
 
-	client.on('messagesUpsert', async (message) => {
+	client.on('messagesUpsert', async (message: WAMessage) => {
 		try {
-			routesParser(message)
+			// routesParser(message)
+			console.log('New MSG', JSON.stringify(message.key))
+
+			console.log(global.sock)
+
 		} catch (error) {
 			pino.error(error, "Something went wrong when handling the message")
 		}
