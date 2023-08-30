@@ -2,7 +2,7 @@ import { AnyMessageContent } from "@whiskeysockets/baileys"
 import DB from "../db/database"
 import { parser } from "../libs/messageParser"
 import getTime from "../utils/getTime"
-import register from "./register"
+import register from "./register/register"
 
 import type { BeforeSendParams, RoutesType } from "../types/routes.d.ts"
 
