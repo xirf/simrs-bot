@@ -17,7 +17,7 @@ import { AnyMessageContent, WAMessage } from "@whiskeysockets/baileys";
  * console.log(`Result: ${result}`);
  * ```
  */
-declare type BeforeNext = (text: string, state: any) => Promise<number>;
+declare type BeforeNext = (text: string, state: any) => Promise<number | null>;
 
 declare type BeforeSendParams = {
     messageText: string;
@@ -33,7 +33,7 @@ declare type BeforeSendParams = {
  */
 declare type BeforeSend = (params: BeforeSendParams, state: UserStateType) => Promise<AnyMessageContent | null>;
 
-declare type beforeCollect = (message: string, state: any) => Promise<any[]>;
+declare type beforeCollect = (message: string, state: UserStateType) => Promise<any[]>;
 
 declare type RoutesType = {
     name: string;
