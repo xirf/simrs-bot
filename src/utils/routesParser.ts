@@ -25,17 +25,11 @@ export default async (message: WAMessage) => {
         if (newState.isCollecting) {
             let _routes = [ ...newState.routes ];
             let _collectible = newState.collection;
-
             let currentRoutes = await getNextRoutes(botRoutes, _routes);
 
-            console.log("Collecting for routes", JSON.stringify(currentRoutes))
-
-            if (currentRoutes.collect.length === 0) {
-                newState.push(0)
-                return;
-            } else {
+            if (currentRoutes.collect.length !== 0) {
                 if (currentRoutes.beforeCollect) {
-                    let _collections = await currentRoutes.beforeCollect(text);
+                    let _collections = await currentRoutes.beforeCollect(text, newState);
                     currentRoutes.collect.forEach((el, index) => {
                         _collectible[ el ] = _collections[ index ];
                     });
@@ -43,15 +37,16 @@ export default async (message: WAMessage) => {
                     _collectible[ currentRoutes.collect[ 0 ] ] = text;
                 }
 
-                if (currentRoutes.beforeNext) {
-                    newState.routes.push(await currentRoutes.beforeNext(text));
+            }
+
+            if (currentRoutes.beforeNext) {
+                newState.routes.push(await currentRoutes.beforeNext(text, newState));
+            } else {
+                let _isMatch = text.match(/\b\d+\b/g);
+                if (_isMatch && parseInt(_isMatch[ 0 ]) <= currentRoutes.next.length) {
+                    newState.routes.push(parseInt(_isMatch[ 0 ]) - 1);
                 } else {
-                    let _isMatch = text.match(/\b\d+\b/g);
-                    if (_isMatch && parseInt(_isMatch[ 0 ]) <= currentRoutes.next.length) {
-                        newState.routes.push(parseInt(_isMatch[ 0 ]) - 1);
-                    } else {
-                        newState.routes.push(0);
-                    }
+                    newState.routes.push(0);
                 }
             }
         }
@@ -96,7 +91,7 @@ export default async (message: WAMessage) => {
             let { messageText, next, beforeCollect, beforeSend } = routes
 
             if (beforeCollect) {
-                let _newState = await beforeCollect(text)
+                let _newState = await beforeCollect(text, newState)
                 newState.collection = [ ...newState.collection, ..._newState ]
                 state.setData(sender, newState)
             }
@@ -104,12 +99,14 @@ export default async (message: WAMessage) => {
             let _message: AnyMessageContent = { text: messageText }
 
             if (beforeSend) {
-                _message = await beforeSend({
+                let beforeSendResult = await beforeSend({
                     messageText,
                     fullMessage: message,
                     collection: newState.collection,
                     nextRoutes: next
-                })
+                }, newState)
+
+                if(beforeSendResult && beforeSendResult != null) _message = beforeSendResult
             }
 
             newState.isCollecting = true;

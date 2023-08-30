@@ -1,5 +1,6 @@
 import DB from "./database";
 import pino from "../libs/logger"
+import { UserStateType } from "./../types/routes"
 class UserState {
     private static instance: UserState;
 
@@ -12,7 +13,7 @@ class UserState {
         return UserState.instance;
     }
 
-    async setData(key: string, value: any) {
+    async setData(key: string, value: UserStateType) {
         try {
             await DB.query(`
                 INSERT INTO public.chat_state (id, state)
@@ -25,13 +26,17 @@ class UserState {
         }
     }
 
-    async getData(key: string) {
+    async getData(key: string): Promise<UserStateType> {
         try {
             const result = await DB.query("SELECT state FROM public.chat_state WHERE id = $1", [ key ]);
             return JSON.parse(result.rows[ 0 ].state);
         } catch (error) {
             pino.warn(error, `Can't find state from ${key}, set the state  to empty`)
-            return {}
+            return {
+                isCollecting: false,
+                routes: [],
+                collection: {}
+            }
         }
     }
 }

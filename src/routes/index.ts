@@ -2,7 +2,7 @@ import { AnyMessageContent } from "@whiskeysockets/baileys"
 import DB from "../db/database"
 import { parser } from "../libs/messageParser"
 import getTime from "../utils/getTime"
-import cekAntrian from "./cekAntrian"
+import register from "./register"
 
 import type { BeforeSendParams, RoutesType } from "../types/routes.d.ts"
 
@@ -31,7 +31,7 @@ const routes: RoutesType = {
     collect: [ "nextRoutes" ],
     beforeSend: beforeSend,
     next: [
-        cekAntrian
+        register
     ]
 }
 
