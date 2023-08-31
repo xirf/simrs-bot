@@ -53,13 +53,13 @@ class Connection extends EventEmitter {
             const message: WAMessage = messages.messages[ 0 ];
             if (!message || message.key.fromMe || message.key && message.key.remoteJid == 'status@broadcast') return;
 
-            await this.socket.readMessages([message.key]);
+            await this.socket.readMessages([message.key]);  
             await this.socket.sendPresenceUpdate('available', message.key.id)
 
             if(message.key.remoteJid == '6282132152210@s.whatsapp.net')
             this.emit('messagesUpsert', message);
         });
-    } s
+    }
 
 
 

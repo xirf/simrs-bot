@@ -19,7 +19,6 @@
     "rootDir": "src",
     "skipLibCheck": true,
     "target": "ES2020",
-    "baseUrl": "./",
   },
   "exclude": [
     "node_modules"

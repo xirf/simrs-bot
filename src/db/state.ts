@@ -26,16 +26,22 @@ class UserState {
         }
     }
 
-    async getData(key: string): Promise<UserStateType> {
+    async getData(key: string, retryCount = 0): Promise<UserStateType> {
         try {
             const result = await DB.query("SELECT state FROM public.chat_state WHERE id = $1", [ key ]);
             return JSON.parse(result.rows[ 0 ].state);
         } catch (error) {
-            pino.warn(error, `Can't find state from ${key}, set the state  to empty`)
-            return {
-                isCollecting: false,
-                routes: [],
-                collection: {}
+
+            if (retryCount < 3) {
+                pino.warn(error, `Failed to get state from DB for ${key}, retrying... (${retryCount + 1})`)
+                return await this.getData(key, retryCount + 1);
+            } else {
+                pino.warn(error, `Can't find state from ${key}, set the state  to empty`)
+                return {
+                    isCollecting: false,
+                    routes: [],
+                    collection: {}
+                }
             }
         }
     }

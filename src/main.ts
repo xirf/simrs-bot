@@ -18,10 +18,7 @@ const start = async () => {
 
 	client.on('messagesUpsert', async (message: WAMessage) => {
 		try {
-			// routesParser(message)
-			console.log('New MSG', JSON.stringify(message.key))
-
-			console.log(global.sock)
+			routesParser(message)
 
 		} catch (error) {
 			pino.error(error, "Something went wrong when handling the message")

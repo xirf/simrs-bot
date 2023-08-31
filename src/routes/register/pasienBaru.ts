@@ -5,7 +5,7 @@ import DB from "../../db/database";
 
 const routes: RoutesType = {
     name: "Daftar pasien umum",
-    messageText: "Booking",
+    messageText: "pasien baru",
     collect: [ "noRM" ],
 }
 
