@@ -39,10 +39,8 @@ export default async (message: WAMessage) => {
 
             }
 
-            
             if (currentRoutes.beforeNext) {
-                let _next = await currentRoutes.beforeNext(text, newState);
-                if (_next) newState.routes.push(_next);
+                newState.routes.push(await currentRoutes.beforeNext(text, newState));
             } else {
                 let _isMatch = text.match(/\b\d+\b/g);
                 if (_isMatch && parseInt(_isMatch[ 0 ]) <= currentRoutes.next.length) {
@@ -108,7 +106,7 @@ export default async (message: WAMessage) => {
                     nextRoutes: next
                 }, newState)
 
-                if (beforeSendResult && beforeSendResult != null) _message = beforeSendResult
+                if(beforeSendResult && beforeSendResult != null) _message = beforeSendResult
             }
 
             newState.isCollecting = true;
