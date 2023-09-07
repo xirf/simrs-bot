@@ -83,8 +83,7 @@ Silahkan balas dengan nomor yang Anda inginkan😊
 Result:
 ```
 Selamat 08:30 AM, John Doe.
-Jadwal kontrol Anda berikutnya adalah:
-Tanggal: 2021-01-01
+
 *Selamat datang di Asisten WA RSU Darmayu!👋*
 
 Silahkan pilih menu berikut:

@@ -1,5 +1,4 @@
 import { WAMessage, downloadMediaMessage } from "@whiskeysockets/baileys";
-import { deflateRaw } from "zlib";
 
 export interface ParsedMessage {
     sender: string;
