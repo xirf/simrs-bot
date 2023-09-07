@@ -3,6 +3,7 @@ import { deflateRaw } from "zlib";
 
 export interface ParsedMessage {
     sender: string;
+    phoneNumber: string;
     pushName: string;
     image: Buffer | null;
     video: Buffer | null;
@@ -19,7 +20,13 @@ const extractMessage = async (message: WAMessage): Promise<ParsedMessage> => {
     try {
         const m = message
         const sender = message.key.remoteJid;
+        const _number = sender.split('@')[ 0 ];
         const pushName = message.pushName || message.verifiedBizName || message.key.remoteJid
+        let phoneNumber = _number;
+
+        if (_number.startsWith('62')) {
+            phoneNumber = _number.replace('62', '0');
+        }
 
         let image = null;
         let video = null;
@@ -38,6 +45,7 @@ const extractMessage = async (message: WAMessage): Promise<ParsedMessage> => {
             || "no messages";
         return {
             sender,
+            phoneNumber,
             pushName,
             image,
             video,

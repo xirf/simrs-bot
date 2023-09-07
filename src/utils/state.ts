@@ -3,6 +3,8 @@ import { Client } from 'pg';
 import db from '@/db';
 import log from './logger';
 
+const stateTable = process.env.TBL_STATE || 'wa_state';
+
 class GlobalState {
     private cache: NodeCache;
 
@@ -18,7 +20,8 @@ class GlobalState {
         }
 
         try {
-            const result = await this.db.query('SELECT value FROM global_state WHERE key = $1', [ key ]);
+            let query = `SELECT value FROM ${stateTable} WHERE key = $1`;
+            const result = await this.db.query(query, [ key ]);
 
             if (result.rows.length > 0) {
                 const value = result.rows[ 0 ].value;
@@ -36,9 +39,10 @@ class GlobalState {
     }
 
     async update(key: string, value: any): Promise<void> {
-        try {
+        try {            
+            let query = `INSERT INTO ${stateTable} (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2`;
             await this.db.query(
-                'INSERT INTO global_state (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2',
+                query,
                 [ key, JSON.stringify(value) ]
             );
 
@@ -51,9 +55,10 @@ class GlobalState {
     }
 
     async clear(key: string): Promise<void> {
-        log.warn(`Clearing state for key ${ key }`)
+        log.warn(`Clearing state for key ${key}`)
         try {
-            await this.db.query('DELETE FROM global_state WHERE key = $1', [ key ]);
+            let query = `DELETE FROM ${stateTable} WHERE key = $1`;
+            await this.db.query(query, [ key ]);
             this.cache.del(key); // Delete from cache
         } catch (error) {
             // Handle errors

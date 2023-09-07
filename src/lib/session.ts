@@ -4,6 +4,11 @@ import type { AuthenticationCreds, SignalDataTypeMap } from '@whiskeysockets/bai
 import type { ClientAuth } from '@/types/Client';
 import log from '@/utils/logger';
 
+const table = process.env.TBL_SESSIONS || 'wa_sessions';
+
+if (!table) {
+    log.warn('Missing table name for sessions');
+}
 
 export default async (pool: Client): Promise<ClientAuth> => {
     // define mapping from signal data type to key in keys object
@@ -20,7 +25,7 @@ export default async (pool: Client): Promise<ClientAuth> => {
     let keys: unknown = {};
 
     // load creds from database if they exist
-    const query = 'SELECT session FROM sessions WHERE sessionId = $1';
+    const query = `SELECT * FROM ${table} WHERE sessionId = $1`;
     const queryParams = [ 'creds' ];
     const storedCreds = await pool.query(query, queryParams);
 
@@ -31,7 +36,7 @@ export default async (pool: Client): Promise<ClientAuth> => {
         keys = parsedCreds.keys;
     } else {
         // if not, generate new creds and store them 
-        const insertQuery = 'INSERT INTO sessions (sessionId, session) VALUES ($1, $2)';
+        const insertQuery = `INSERT INTO ${table} (sessionId, session) VALUES ($1, $2)`;
         const insertParams = [ 'creds', JSON.stringify({ creds: initAuthCreds(), keys }, BufferJSON.replacer) ];
 
         try {
@@ -46,7 +51,7 @@ export default async (pool: Client): Promise<ClientAuth> => {
 
     //  Save the current client state (credentials and keys) to the database.
     const saveState = async (): Promise<void> => {
-        const updateQuery = 'UPDATE sessions SET session = $1 WHERE sessionId = $2';
+        const updateQuery = `UPDATE ${table} SET session = $1 WHERE sessionId = $2`
         const updateParams = [ JSON.stringify({ creds, keys }, BufferJSON.replacer), 'creds' ];
 
         try {
@@ -101,7 +106,7 @@ export default async (pool: Client): Promise<ClientAuth> => {
         saveState,
         // Clear the client state from the database. 
         clearState: async (): Promise<void> => {
-            const deleteQuery = 'DELETE FROM sessions WHERE sessionId = $1';
+            const deleteQuery = `DELETE FROM ${table} WHERE sessionId = $1`;
             const deleteParams = [ 'creds' ];
 
             try {
