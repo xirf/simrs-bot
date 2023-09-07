@@ -1,29 +1,36 @@
-import log from "@/utils/logger";
-import { Dialect, Sequelize } from "sequelize"
+import { Client } from 'pg';
+import log from '@/utils/logger';
+
+const DB_HOST = process.env.DB_HOST;
+const DB_PORT = process.env.DB_PORT;
+const DB_USER = process.env.DB_USER;
+const DB_PASSWORD = process.env.DB_PASSWORD;
+const DB_DATABASE = process.env.DB_DATABASE;
 
 
-const config = {
-    username: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE,
-    host: process.env.DB_HOST,
-    dialect: "postgres",
-}
-
-
-const db = new Sequelize(config.database, config.username, config.password, {
-    host: config.host,
-    dialect: config.dialect as Dialect,
-    logging: log.debug.bind(log),
-})
-
-try {
-    await db.authenticate();
-    log.info("Connection has been established successfully.");
-} catch (error) {
-    await db.close();
-    log.fatal("Unable to connect to the database:", error);
+if (!DB_HOST || !DB_PORT || !DB_USER || !DB_PASSWORD || !DB_DATABASE) {
+    log.fatal('Missing database environment variables');
     process.exit(1);
 }
+
+const db = new Client({
+    host: DB_HOST,
+    port: parseInt(DB_PORT),
+    user: DB_USER,
+    password: DB_PASSWORD,
+    database: DB_DATABASE,
+
+});
+
+// test connection to database
+(async () => {
+    try {
+        await db.connect();
+        log.info('Connected to database');
+    } catch (error) {
+        log.fatal('Failed to connect to database');
+        process.exit(1);
+    }
+})();
 
 export default db;
