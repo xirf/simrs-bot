@@ -23,9 +23,10 @@ function welcomeMessage(msg: WAMessage): Promise<AnyMessageContent> {
             let templateQuery = `SELECT "template" from "public".${process.env.TBL_TEMPLATE} where "name"='msg.welcome'`;
             const templateMsg = await db.query(templateQuery);
 
+  
             let message = parseTemplate(templateMsg.rows[ 0 ].template, {
-                nama: result.rows[ 0 ].nama || pushName,
-                tgl_kontrol: result.rows[ 0 ].tgl_kontrol
+                nama: result.rows[ 0 ]?.nama ?? pushName,
+                tgl_kontrol: result.rows[ 0 ]?.tgl_kontrol
             });
 
             resolve({ text: message });

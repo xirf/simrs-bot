@@ -1,50 +1,67 @@
 import { WAMessage } from "@whiskeysockets/baileys";
 import welcomeMessage from "./welcome.js";
-
+import { writeFileSync } from "fs";
+import extractMessage from "../utils/extract";
 
 
 
 const conversationFlow = {
     "msg.welcome": {
         handler: welcomeMessage,
-        awaitResponse: (msg: WAMessage) => {
-            return msg.message?.conversation === "yes";
+        awaitResponse: async (msg: WAMessage) => {
+            console.log("MSG.WELCOME", JSON.stringify(msg));
+            writeFileSync("msg.welcome.json", JSON.stringify(msg, null, 2));
+
+            let { text } = await extractMessage(msg);
+
+            return text === "yes";
         },
         transitions: [
             {
-                condition: (resp) => resp === true,
+                condition: (_) => { return true },
                 nextRoute: "msg.true",
             },
             {
-                condition: (resp) => resp === false,
+                condition: (_) => { return true },
                 nextRoute: "msg.false",
             },
         ]
     },
     "msg.true": {
-        handler: () => { text: "Terima kasih" },
-        awaitResponse: (msg: WAMessage) => {
-            return msg.message?.conversation === "yes";
+        handler: (msg: WAMessage) => {
+            writeFileSync("msg.true.json", JSON.stringify(msg, null, 2));
+            
+            return ({ text: "Terima kasih" })
+        },
+        awaitResponse: async (msg: WAMessage) => {
+            let { text } = await extractMessage(msg);
+            return text === "yes";
         },
         transitions: [
             {
-                condition: (resp) => resp === true,
+                condition: (resp) => {
+                    console.log("MSG.TRUE", resp);
+                    return (resp === true)
+                },
                 nextRoute: "msg.true2",
             },
             {
-                condition: (resp) => resp === false,
+                condition: (resp) => {
+                    console.log("MSG.TRUE", resp)
+                    return (resp === false)
+                },
                 nextRoute: "msg.false",
             },
         ]
     },
     "msg.true2": {
-        handler: () => { text: "Msg Handler 2" },
+        handler: () => { return ({ text: "Msg Handler 2" }) },
     },
     "msg.false": {
-        handler: () => { text: "Ups! Maaf ya" },
+        handler: () => { return ({ text: "Ups! Maaf ya" }) },
     },
     "end": {
-        handler: () => { text: "Terima kasih sudah selesai" },
+        handler: () => { return ({ text: "Terima kasih sudah selesai" }) },
     }
 
 };

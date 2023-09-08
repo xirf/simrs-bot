@@ -3,13 +3,13 @@ import type { Reply } from "../types/Client.d.ts";
 import state from "../utils/state";
 import extractMessage from "../utils/extract.js";
 import conversationFlow from "./conversationFlow";
-
+import { writeFileSync } from "fs"
 
 export default async function handler(msg: WAMessage, reply: Reply): Promise<void> {
-    console.log('handler')
     try {
         const { sender } = await extractMessage(msg);
         let lastState = await state.get(sender);
+        writeFileSync("state.json", JSON.stringify(lastState, undefined, 2))
 
         if (!lastState) {
             // If there's no conversation state, start a new one with the initial route
@@ -32,7 +32,6 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
                 for (const transition of routes.transitions) {
                     if (transition.condition(response)) {
                         // run the handler for the next route
-                        console.log("C flow", conversationFlow[ transition.nextRoute ].handler(msg));
                         reply(await conversationFlow[ transition.nextRoute ].handler(msg), sender);
 
                         // update the state with the next route if present
