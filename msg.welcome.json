@@ -1,0 +1,32 @@
+{
+  "key": {
+    "remoteJid": "6282132152210@s.whatsapp.net",
+    "fromMe": false,
+    "id": "3EA3CAE44D229FD815"
+  },
+  "messageTimestamp": 1694185855,
+  "pushName": "ankatama",
+  "broadcast": false,
+  "message": {
+    "extendedTextMessage": {
+      "text": "yes",
+      "contextInfo": {
+        "expiration": 0,
+        "ephemeralSettingTimestamp": "0",
+        "disappearingMode": {
+          "initiator": "CHANGED_IN_CHAT"
+        }
+      }
+    },
+    "messageContextInfo": {
+      "deviceListMetadata": {
+        "senderKeyHash": "YiJtXizCTtmSDw==",
+        "senderTimestamp": "1693323759",
+        "recipientKeyHash": "GemViriJl5B5Ww==",
+        "recipientTimestamp": "1693446675"
+      },
+      "deviceListMetadataVersion": 2
+    }
+  },
+  "verifiedBizName": "ankatama"
+}
