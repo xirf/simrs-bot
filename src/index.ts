@@ -1,8 +1,21 @@
-import db from "./db";
+import log from "./utils/logger";
+
+
+log.info("Loading environment variables...");
+require("dotenv").config({
+    override: !1,
+});
+log.info("Running in " + process.env.NODE_ENV || "Development" + " mode");
+
+
+import db from "./db/client";
 import startSock from "./lib/waclient";
-import dotenv from "dotenv";
 
-dotenv.config();
+(async () => {
+    log.info("Connecting to database...");
+    await db.connect();
 
-await db.connect();
-startSock();
+    log.info("Starting sock...");
+    await startSock();
+})()
+

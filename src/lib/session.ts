@@ -1,8 +1,8 @@
 import { Client } from 'pg';
 import { BufferJSON, initAuthCreds, proto } from '@whiskeysockets/baileys';
 import type { AuthenticationCreds, SignalDataTypeMap } from '@whiskeysockets/baileys';
-import type { ClientAuth } from '@/types/Client';
-import log from '@/utils/logger';
+import type { ClientAuth } from '../types/Client';
+import log from '../utils/logger';
 
 const table = process.env.TBL_SESSIONS || 'wa_sessions';
 

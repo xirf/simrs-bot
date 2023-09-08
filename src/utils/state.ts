@@ -1,6 +1,6 @@
 import NodeCache from 'node-cache';
 import { Client } from 'pg';
-import db from '@/db';
+import db from '../db/client';
 import log from './logger';
 
 const stateTable = process.env.TBL_STATE || 'wa_state';

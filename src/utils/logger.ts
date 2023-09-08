@@ -1,14 +1,14 @@
 import pino from 'pino';
 
 const log = pino({
-    level: process.env.production ? 'warn' : 'debug',
+    level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
     transport: {
         target: "pino-pretty",
         options: {
             colorize: true,
             levelFirst: true,
             ignore: 'pid,hostname',
-            hideObject: process.env.production,
+            hideObject: process.env.NODE_ENV == 'production',
 
         }
     }

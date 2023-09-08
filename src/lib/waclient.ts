@@ -1,10 +1,12 @@
 import { Boom } from '@hapi/boom'
 import NodeCache from 'node-cache'
-import pino from '@/utils/logger'
+import pino from '../utils/logger'
 import handler from '../commands/handler'
-import { Reply } from '@/types/Client'
-import auth from '@/lib/session'
-import db from '@/db'
+import { Reply } from '../types/Client'
+import auth from '../lib/session'
+import db from '../db/client'
+import qrCode from "qrcode-terminal"
+import log from '../utils/logger'
 
 import makeWASocket, {
     delay,
@@ -29,10 +31,10 @@ const msgRetryCounterCache = new NodeCache()
 // the store maintains the data of the WA connection in memory
 // can be written out to a file & read from it
 const store = makeInMemoryStore({ logger })
-store?.readFromFile('./baileys_store_multi.json')
+store?.readFromFile('./store/waStore.json')
 // save every 10s
 setInterval(() => {
-    store?.writeToFile('./baileys_store_multi.json')
+    store?.writeToFile('./store/waStore.json')
 }, 10_000)
 
 
@@ -41,26 +43,26 @@ const startSock = async () => {
     const { state, saveState } = await auth(db)
     // fetch latest version of WA Web
     const { version, isLatest } = await fetchLatestBaileysVersion()
-    console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`)
+    log.info(`using WA v${version.join('.')}, isLatest: ${isLatest}`)
 
     const sock = makeWASocket({
         version,
         logger,
-        printQRInTerminal: true,
+        printQRInTerminal: false,
         auth: {
             creds: state.creds,
             keys: makeCacheableSignalKeyStore(state.keys, logger),
         },
         msgRetryCounterCache,
         generateHighQualityLinkPreview: true,
-        // ignore all broadcast messages -- to receive the same
-        // comment the line below out
+        // ignore all non user (group, broadcast) messages
         shouldIgnoreJid: jid => !isJidUser(jid),
+
         // implement to handle retries & poll updates
         getMessage,
     })
-
     store?.bind(sock.ev)
+
 
     // prevent immediate send without read message that may cause banned
     const sendMessageWTyping: Reply = async (msg, jid) => {
@@ -74,10 +76,17 @@ const startSock = async () => {
         await sock.sendMessage(jid, msg)
     }
 
+
     sock.ev.process(
         async (events) => {
             if (events[ 'connection.update' ]) {
                 const update = events[ 'connection.update' ]
+
+                if (update.qr) {
+                    log.info('New QR received, please scan to continue')
+                    qrCode.generate(update.qr, { small: true })
+                }
+
                 const { connection, lastDisconnect } = update
                 if (connection === 'close') {
                     // reconnect if not logged out
@@ -86,11 +95,12 @@ const startSock = async () => {
                             startSock()
                         }, 3000);
                     } else {
-                        console.log('Connection closed. You are logged out.')
+                        log.fatal('Connection closed. You are logged out.')
+                        process.exit(1)
                     }
                 }
 
-                console.log('connection update', update)
+                log.info('connection update', update)
             }
 
             if (events[ 'creds.update' ]) {
@@ -98,17 +108,12 @@ const startSock = async () => {
             }
 
             if (events.call) {
-                console.log('recv call event', events.call)
-            }
-
-            if (events[ 'messaging-history.set' ]) {
-                const { chats, contacts, messages, isLatest } = events[ 'messaging-history.set' ]
-                console.log(`recv ${chats.length} chats, ${contacts.length} contacts, ${messages.length} msgs (is latest: ${isLatest})`)
+                log.info('recv call event', events.call)
             }
 
             if (events[ 'messages.upsert' ]) {
                 const upsert = events[ 'messages.upsert' ]
-                console.log('recv messages ', JSON.stringify(upsert, undefined, 2))
+                log.info('recv messages ', JSON.stringify(upsert, undefined, 2))
 
                 if (upsert.type === 'notify') {
                     for (const msg of upsert.messages) {
@@ -134,6 +139,7 @@ const startSock = async () => {
         return proto.Message.fromObject({})
     }
 
+    
     // set global sock to use in other file
     globalThis.sock = sock
 

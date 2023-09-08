@@ -1,10 +1,10 @@
-import db from "@/db";
-import log from "@/utils/logger";
-import extractMessage from "@/utils/extract";
-import type { RouteModule } from "@/types/Client.d.ts";
-import parseTemplate from "@/utils/parseTemplate";
+import db from "../db/client";
+import log from "../utils/logger";
+import extractMessage from "../utils/extract";
+import parseTemplate from "../utils/parseTemplate";
+import { WAMessage } from "@whiskeysockets/baileys";
 
-const welcomeMessage: RouteModule = async function welcomeMessage(msg) {
+function welcomeMessage(msg: WAMessage): Promise<void> {
     return new Promise(async (resolve, reject) => {
         try {
             const { sender, pushName, phoneNumber } = await extractMessage(msg);
@@ -17,29 +17,21 @@ const welcomeMessage: RouteModule = async function welcomeMessage(msg) {
             LIMIT 1; 
             `;
             const result = await db.query(query, [
-                phoneNumber, new Date().toISOString().split('T')[0]
+                phoneNumber, new Date().toISOString().split('T')[ 0 ]
             ]);
 
             let templateQuery = `select template from ${process.env.TBL_TEMPLATE} where name = 'msg.welcome'`;
             const templateMsg = await db.query(templateQuery);
 
-            if (result.rows.length) {
-                const { nama, tgl_kontrol } = result.rows[0];
-                const msg = parseTemplate(templateMsg.rows[0].template, {
-                    nama: nama,
-                    kontrol: tgl_kontrol
-                });
-                await this.sendMessage(sender, msg, MessageType.text);
-            } else {
-                const msg = parseTemplate(templateMsg.rows[0].template, {
-                    nama: pushName
-                });
-                await this.sendMessage(sender, msg, MessageType.text);
-            }
+            let message = parseTemplate(templateMsg.rows[ 0 ].template, {
+                nama: result.rows[ 0 ].nama || pushName,
+                tgl_kontrol: result.rows[ 0 ].tgl_kontrol
+            });
 
             
+            global.sock.sendMessage(sender, { text: message })
 
-            if(!result.rows.length) {
+            if (!result.rows.length) {
                 resolve();
                 return;
             }
