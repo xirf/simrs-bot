@@ -39,8 +39,8 @@ class GlobalState {
     }
 
     async update(key: string, value: any): Promise<void> {
-        try {            
-            let query = `INSERT INTO ${stateTable} (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2`;
+        try {
+            let query = `UPDATE ${stateTable} SET value = $2 WHERE key = $1`
             await this.db.query(
                 query,
                 [ key, JSON.stringify(value) ]

@@ -6,12 +6,17 @@ const DB_PORT = process.env.DB_PORT;
 const DB_USER = process.env.DB_USER;
 const DB_PASSWORD = process.env.DB_PASSWORD;
 const DB_DATABASE = process.env.DB_DATABASE;
-const TABLE_SESSION = process.env.TBL_SESSIONS || 'wa_sessions';
-const TABLE_STATE = process.env.TBL_STATE || 'wa_state';
-const TABLE_TEMPLATE = process.env.TBL_TEMPLATE || 'wa_template';
+const TABLE_SESSION = process.env.TBL_SESSIONS;
+const TABLE_STATE = process.env.TBL_STATE;
+const TABLE_TEMPLATE = process.env.TBL_TEMPLATE;
 
 if (!DB_HOST || !DB_PORT || !DB_USER || !DB_PASSWORD || !DB_DATABASE) {
     log.fatal('Missing database environment variables');
+    process.exit(1);
+}
+
+if (!TABLE_SESSION || !TABLE_STATE || !TABLE_TEMPLATE) {
+    log.error('Whatsapp table name is not defined, please set the environment variables');
     process.exit(1);
 }
 

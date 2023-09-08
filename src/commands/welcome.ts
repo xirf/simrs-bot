@@ -2,17 +2,17 @@ import db from "../db/client";
 import log from "../utils/logger";
 import extractMessage from "../utils/extract";
 import parseTemplate from "../utils/parseTemplate";
-import { WAMessage } from "@whiskeysockets/baileys";
+import { AnyMessageContent, WAMessage } from "@whiskeysockets/baileys";
 
-function welcomeMessage(msg: WAMessage): Promise<void> {
+function welcomeMessage(msg: WAMessage): Promise<AnyMessageContent> {
     return new Promise(async (resolve, reject) => {
         try {
-            const { sender, pushName, phoneNumber } = await extractMessage(msg);
+            const { pushName, phoneNumber } = await extractMessage(msg);
             const query = `SELECT p.nama, b.tgl_kontrol
             FROM pasien p
             INNER JOIN booking b ON p.no_rm = b.no_rm
             WHERE RIGHT(p.telepon, 10) = RIGHT($1, 10)
-              AND b.tgl_kontrol >= $2; 
+              AND b.tgl_kontrol >= $2
             ORDER BY b.tgl_kontrol DESC
             LIMIT 1; 
             `;
@@ -20,7 +20,7 @@ function welcomeMessage(msg: WAMessage): Promise<void> {
                 phoneNumber, new Date().toISOString().split('T')[ 0 ]
             ]);
 
-            let templateQuery = `select template from ${process.env.TBL_TEMPLATE} where name = 'msg.welcome'`;
+            let templateQuery = `SELECT "template" from "public".${process.env.TBL_TEMPLATE} where "name"='msg.welcome'`;
             const templateMsg = await db.query(templateQuery);
 
             let message = parseTemplate(templateMsg.rows[ 0 ].template, {
@@ -28,13 +28,7 @@ function welcomeMessage(msg: WAMessage): Promise<void> {
                 tgl_kontrol: result.rows[ 0 ].tgl_kontrol
             });
 
-            
-            global.sock.sendMessage(sender, { text: message })
-
-            if (!result.rows.length) {
-                resolve();
-                return;
-            }
+            resolve({ text: message });
 
         } catch (error) {
             log.error(error)

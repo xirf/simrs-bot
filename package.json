@@ -2,10 +2,10 @@
   "name": "botsimrs",
   "version": "1.2.10",
   "description": "whatsapp bot for simple message handler and notification",
-  "main": "dist/index.js",
+  "main": "src/index.ts",
   "scripts": {
     "start": "tsc && node ./dist/src/index.js",
-    "dev": "NODE_ENV=dev nodemon ./src/index.ts",
+    "dev": "nodemon ./src/index.ts",
     "build": "tsc"
   },
   "repository": {

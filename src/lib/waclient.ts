@@ -1,7 +1,6 @@
 import { Boom } from '@hapi/boom'
 import NodeCache from 'node-cache'
 import pino from '../utils/logger'
-import handler from '../commands/handler'
 import { Reply } from '../types/Client'
 import auth from '../lib/session'
 import db from '../db/client'
@@ -13,29 +12,15 @@ import makeWASocket, {
     DisconnectReason,
     fetchLatestBaileysVersion,
     makeCacheableSignalKeyStore,
-    makeInMemoryStore,
-    isJidUser, proto,
-    WAMessageContent,
-    WAMessageKey
+    isJidUser
 } from '@whiskeysockets/baileys'
 
 const logger = pino.child({});
 logger.level = 'debug'
 
-const doReplies = !process.argv.includes('--no-reply')
-
 // external map to store retry counts of messages when decryption/encryption fails
 // keep this out of the socket itself, so as to prevent a message decryption/encryption loop across socket restarts
 const msgRetryCounterCache = new NodeCache()
-
-// the store maintains the data of the WA connection in memory
-// can be written out to a file & read from it
-const store = makeInMemoryStore({ logger })
-store?.readFromFile('./store/waStore.json')
-// save every 10s
-setInterval(() => {
-    store?.writeToFile('./store/waStore.json')
-}, 10_000)
 
 
 // start a connection
@@ -57,11 +42,7 @@ const startSock = async () => {
         generateHighQualityLinkPreview: true,
         // ignore all non user (group, broadcast) messages
         shouldIgnoreJid: jid => !isJidUser(jid),
-
-        // implement to handle retries & poll updates
-        getMessage,
     })
-    store?.bind(sock.ev)
 
 
     // prevent immediate send without read message that may cause banned
@@ -75,7 +56,6 @@ const startSock = async () => {
         await sock.sendPresenceUpdate('paused', jid)
         await sock.sendMessage(jid, msg)
     }
-
 
     sock.ev.process(
         async (events) => {
@@ -111,40 +91,19 @@ const startSock = async () => {
                 log.info('recv call event', events.call)
             }
 
-            if (events[ 'messages.upsert' ]) {
-                const upsert = events[ 'messages.upsert' ]
-                log.info('recv messages ', JSON.stringify(upsert, undefined, 2))
-
-                if (upsert.type === 'notify') {
-                    for (const msg of upsert.messages) {
-                        if (!msg.key.fromMe && doReplies) {
-                            // reply to messages
-                            await handler(msg, sendMessageWTyping)
-                        }
-                    }
-                }
-            }
-
         }
     )
 
-    
-    // this function use to get message from store
-    async function getMessage(key: WAMessageKey): Promise<WAMessageContent | undefined> {
-        if (store) {
-            const msg = await store.loadMessage(key.remoteJid!, key.id!)
-            return msg?.message || undefined
-        }
-        
-        return proto.Message.fromObject({})
-    }
+    // sock.ev.on("messages.upsert", m => {
+    //     let msg = m.messages[ 0 ]
+    //     console.log(JSON.stringify(msg, null, 2))
 
-    
-    // set global sock to use in other file
-    globalThis.sock = sock
+    //     if (msg.key.fromMe) return;
+    //     sendMessageWTyping({ text: 'test' }, m.messages[ 0 ].key.remoteJid)
+    // })
 
-    // in case of import this file, return sock
-    return sock
+    return { sock, sendMessageWTyping }
 }
+
 
 export default startSock
