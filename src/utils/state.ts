@@ -2,8 +2,9 @@ import NodeCache from 'node-cache';
 import { Client } from 'pg';
 import db from '../db/client';
 import log from './logger';
+import config from '../config';
 
-const stateTable = process.env.TBL_STATE || 'wa_state';
+const stateTable = config.tables.state;
 
 class GlobalState {
     private cache: NodeCache;

@@ -1,33 +1,12 @@
 import { Client } from 'pg';
 import log from '../utils/logger';
+import config from '../config';
 
-const DB_HOST = process.env.DB_HOST;
-const DB_PORT = process.env.DB_PORT;
-const DB_USER = process.env.DB_USER;
-const DB_PASSWORD = process.env.DB_PASSWORD;
-const DB_DATABASE = process.env.DB_DATABASE;
-const TABLE_SESSION = process.env.TBL_SESSIONS;
-const TABLE_STATE = process.env.TBL_STATE;
-const TABLE_TEMPLATE = process.env.TBL_TEMPLATE;
+const db = new Client(config.db);
 
-if (!DB_HOST || !DB_PORT || !DB_USER || !DB_PASSWORD || !DB_DATABASE) {
-    log.fatal('Missing database environment variables');
-    process.exit(1);
-}
-
-if (!TABLE_SESSION || !TABLE_STATE || !TABLE_TEMPLATE) {
-    log.error('Whatsapp table name is not defined, please set the environment variables');
-    process.exit(1);
-}
-
-const db = new Client({
-    host: DB_HOST,
-    port: parseInt(DB_PORT),
-    user: DB_USER,
-    password: DB_PASSWORD,
-    database: DB_DATABASE,
-
-});
+const TABLE_SESSION = config.tables.sessions;
+const TABLE_STATE = config.tables.state;
+const TABLE_TEMPLATE = config.tables.template;
 
 // test connection to database
 (async () => {

@@ -3,12 +3,9 @@ import { BufferJSON, initAuthCreds, proto } from '@whiskeysockets/baileys';
 import type { AuthenticationCreds, SignalDataTypeMap } from '@whiskeysockets/baileys';
 import type { ClientAuth } from '../types/Client';
 import log from '../utils/logger';
+import config from '../config';
+const table = config.tables.sessions;
 
-const table = process.env.TBL_SESSIONS || 'wa_sessions';
-
-if (!table) {
-    log.warn('Missing table name for sessions');
-}
 
 export default async (pool: Client): Promise<ClientAuth> => {
     // define mapping from signal data type to key in keys object

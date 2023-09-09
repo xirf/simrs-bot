@@ -4,25 +4,17 @@ import { writeFileSync } from "fs";
 import extractMessage from "../utils/extract";
 
 
-
 const conversationFlow = {
     "msg.welcome": {
-        handler: welcomeMessage,
-        awaitResponse: async (msg: WAMessage) => {
-            console.log("MSG.WELCOME", JSON.stringify(msg));
-            writeFileSync("msg.welcome.json", JSON.stringify(msg, null, 2));
-
-            let { text } = await extractMessage(msg);
-
-            return text === "yes";
-        },
+        handler: welcomeMessage.handler,
+        awaitResponse: welcomeMessage.parseResponse,
         transitions: [
             {
-                condition: (_) => { return true },
+                condition: (resp) => resp === 1,
                 nextRoute: "msg.true",
             },
             {
-                condition: (_) => { return true },
+                condition: (resp) => resp === 2,
                 nextRoute: "msg.false",
             },
         ]
@@ -30,7 +22,7 @@ const conversationFlow = {
     "msg.true": {
         handler: (msg: WAMessage) => {
             writeFileSync("msg.true.json", JSON.stringify(msg, null, 2));
-            
+
             return ({ text: "Terima kasih" })
         },
         awaitResponse: async (msg: WAMessage) => {

@@ -2,12 +2,16 @@ import db from "../db/client";
 import log from "../utils/logger";
 import extractMessage from "../utils/extract";
 import parseTemplate from "../utils/parseTemplate";
-import { AnyMessageContent, WAMessage } from "@whiskeysockets/baileys";
+import { AnyMessageContent, WAMessage, toNumber } from "@whiskeysockets/baileys";
+import config from "../config";
 
-function welcomeMessage(msg: WAMessage): Promise<AnyMessageContent> {
+
+function handler(msg: WAMessage): Promise<AnyMessageContent> {
     return new Promise(async (resolve, reject) => {
         try {
             const { pushName, phoneNumber } = await extractMessage(msg);
+
+
             const query = `SELECT p.nama, b.tgl_kontrol
             FROM pasien p
             INNER JOIN booking b ON p.no_rm = b.no_rm
@@ -20,15 +24,22 @@ function welcomeMessage(msg: WAMessage): Promise<AnyMessageContent> {
                 phoneNumber, new Date().toISOString().split('T')[ 0 ]
             ]);
 
-            let templateQuery = `SELECT "template" from "public".${process.env.TBL_TEMPLATE} where "name"='msg.welcome'`;
+
+            let templateQuery = `
+            SELECT "template" from "public".${config.tables.template} 
+            WHERE "name"='msg.welcome'
+            `;
             const templateMsg = await db.query(templateQuery);
 
-  
+
+            // parse the template this will replace pattern [name] using name
+            // if kontrol is available it will also replaced
             let message = parseTemplate(templateMsg.rows[ 0 ].template, {
-                nama: result.rows[ 0 ]?.nama ?? pushName,
-                tgl_kontrol: result.rows[ 0 ]?.tgl_kontrol
+                name: result.rows[ 0 ]?.nama ?? pushName,
+                kontrol: result.rows[ 0 ]?.tgl_kontrol
             });
 
+            // return the message
             resolve({ text: message });
 
         } catch (error) {
@@ -38,4 +49,14 @@ function welcomeMessage(msg: WAMessage): Promise<AnyMessageContent> {
     })
 }
 
-export default welcomeMessage
+async function parseResponse(msg: WAMessage): Promise<number> {
+    let { text } = await extractMessage(msg);
+
+    // get first number from the text
+    return toNumber(text.replace(/\D/g, ''))
+}
+
+export default {
+    handler,
+    parseResponse
+}
