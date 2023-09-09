@@ -7,7 +7,6 @@
     "allowJs": false,
     "outDir": "dist",
     "newLine": "crlf",
-    "baseUrl": "./",
     "rootDir": "./",
     "isolatedModules": true,
     "esModuleInterop": true,

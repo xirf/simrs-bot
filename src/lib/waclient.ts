@@ -94,13 +94,14 @@ const startSock = async () => {
         }
     )
 
-    // sock.ev.on("messages.upsert", m => {
-    //     let msg = m.messages[ 0 ]
-    //     console.log(JSON.stringify(msg, null, 2))
+    // read the message
+    sock.ev.on("messages.upsert", m => {
+        let msg = m.messages[ 0 ]
+        console.log(JSON.stringify(msg, null, 2))
 
-    //     if (msg.key.fromMe) return;
-    //     sendMessageWTyping({ text: 'test' }, m.messages[ 0 ].key.remoteJid)
-    // })
+        if (msg.key.fromMe) return;
+        sock.readMessages([ msg.key ]);
+    })
 
     return { sock, sendMessageWTyping }
 }
