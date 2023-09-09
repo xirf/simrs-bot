@@ -37,21 +37,13 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
                 await state.clear(sender);
                 return;
 
-            } else if (response.toString().toLowerCase() === "invalid") {
-
-                // handle if input invalid
-                let query = `SELECT template from "public".${config.tables.template} where name='msg.err.invalidInput'`
-                let template = await db.query(query)
-                let text = template.rows[ 0 ].template + "\n\n" + await routes.handler(msg);
-
-
-                reply({ text }, sender)
-                return;
             }
 
 
             // If there's a transition, update the state with the next route
             if (routes.transitions) {
+                let match = false;
+
                 for (const transition of routes.transitions) {
                     if (transition.condition(response)) {
                         // run the handler for the next route
@@ -72,9 +64,23 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
                             // clear the state
                             await state.clear(sender);
                         }
+
+                        match = true;
                         break;
                     }
                 }
+
+                // if there's no match, then send invalid input
+                if (!match) {
+                    let query = `SELECT template from "public".${config.tables.template} where name='msg.err.invalidInput'`
+                    let template = await db.query(query)
+                    let text = template.rows[ 0 ].template + "\n\n" + await routes.handler(msg);
+
+
+                    reply({ text }, sender)
+                    return;
+                }
+
             }
 
         } else {

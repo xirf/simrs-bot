@@ -4,6 +4,7 @@ import extractMessage from "../utils/extract";
 import parseTemplate from "../utils/parseTemplate";
 import { AnyMessageContent, WAMessage, toNumber } from "@whiskeysockets/baileys";
 import config from "../config";
+import formatDate from "../utils/formatDate";
 
 
 function handler(msg: WAMessage): Promise<AnyMessageContent> {
@@ -36,7 +37,8 @@ function handler(msg: WAMessage): Promise<AnyMessageContent> {
             // if kontrol is available it will also replaced
             let message = parseTemplate(templateMsg.rows[ 0 ].template, {
                 name: result.rows[ 0 ]?.nama ?? pushName,
-                kontrol: result.rows[ 0 ]?.tgl_kontrol
+                kontrol: result.rows[ 0 ]?.tgl_kontrol,
+                time: formatDate((new Date()).toISOString())
             });
 
             // return the message

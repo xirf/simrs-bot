@@ -1,6 +1,7 @@
 import welcomeMessage from "./welcome.js";
 import selectRegtype from "./regist/selectRegtype.js";
 import type { ConversationFlow } from "../types/Command.d.ts";
+import regBPJS from "./regist/regBPJS.js";
 
 const conversationFlow: ConversationFlow = {
     "msg.welcome": {
@@ -31,7 +32,7 @@ const conversationFlow: ConversationFlow = {
         handler: async () => { return ({ text: "Msg Handler 2" }) },
     },
     "req.bpjs": {
-        handler: async () => { return ({ text: "Ups! Maaf ya" }) },
+        handler: regBPJS.handler,
     },
     "end": {
         handler: async () => { return ({ text: "Terima kasih sudah selesai" }) },

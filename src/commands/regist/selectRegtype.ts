@@ -6,7 +6,7 @@ import type { WAMessage, AnyMessageContent } from "@whiskeysockets/baileys";
 
 async function handler(_: WAMessage): Promise<AnyMessageContent> {
     try {
-        let query = `SELECT template from "public".${config.tables.template} WHERE name='msg.regist.selectRegtype'`;
+        let query = `SELECT template from "public".${config.tables.template} WHERE name='msg.reg.selectRegtype'`;
         let template = await db.query(query);
 
         return { text: template.rows[ 0 ].template }
@@ -19,7 +19,8 @@ async function handler(_: WAMessage): Promise<AnyMessageContent> {
 
 async function parseResponse(msg) {
     let { text } = await extractMessage(msg);
-    return text === "yes";
+    
+    return parseInt((text.match(/\d+/) ?? [])[ 0 ] ?? "0");
 }
 
 export default {
