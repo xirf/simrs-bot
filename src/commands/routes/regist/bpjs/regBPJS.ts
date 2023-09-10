@@ -1,6 +1,6 @@
 import { AnyMessageContent, WAMessage } from "@whiskeysockets/baileys";
-import db from "../../db/client";
-import config from "../../config";
+import db from "../../../../db/client";
+import config from "../../../../config";
 
 
 async function handler(_msg: WAMessage): Promise<AnyMessageContent[]> {

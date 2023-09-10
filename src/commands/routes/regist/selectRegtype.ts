@@ -1,7 +1,7 @@
-import db from "../../db/client"
-import config from "../../config";
-import log from "../../utils/logger";
-import extractMessage from "../../utils/extract";
+import db from "../../../db/client"
+import config from "../../../config";
+import log from "../../../utils/logger";
+import extractMessage from "../../../utils/extract";
 import type { WAMessage, AnyMessageContent } from "@whiskeysockets/baileys";
 
 async function handler(_: WAMessage): Promise<AnyMessageContent> {

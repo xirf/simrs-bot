@@ -1,7 +1,9 @@
 import { AnyMessageContent, WAMessage } from "@whiskeysockets/baileys";
-import db from "../../db/client";
-import config from "../../config";
-import extractMessage from "../../utils/extract";
+import db from "../../../../db/client";
+import config from "../../../../config";
+import extractMessage from "../../../../utils/extract";
+import { ResponseHandler } from "../../../../types/Command";
+import state from "../../../../utils/state";
 
 async function handler(_msg): Promise<AnyMessageContent> {
     try {
@@ -47,12 +49,33 @@ async function handler(_msg): Promise<AnyMessageContent> {
     }
 }
 
-async function parseResponse(msg: WAMessage) {
-    let { text } = await extractMessage(msg)
+async function parseResponse(msg: WAMessage): ResponseHandler {
+    let { text, sender } = await extractMessage(msg)
 
-    let query = `SELECT nama,  from "public".pasien WHERE no_rm=$1`;
+    let query = `SELECT nama from "public".pasien WHERE no_rm=$1`;
     let result = await db.query(query, [ text ]);
 
+    if (result.rowCount === 0) {
+        let errMsg = await db.query(`SELECT template from "public".${config.tables.template} WHERE name='msg.err.RMNotFound'`);
+
+        // return an error object to restart current route
+        return ({
+            error: {
+                text: errMsg.rows[ 0 ].template
+            }
+        })
+    } else {
+        let userState = await state.get(sender)
+
+        // save the noRM and name to the state 
+        // be careful when using userState, it's not a copy, it's a reference
+        userState.noRM = text
+        userState.name = result.rows[ 0 ].nama
+
+        await state.update(sender, userState)
+        return 1
+
+    }
 }
 
 

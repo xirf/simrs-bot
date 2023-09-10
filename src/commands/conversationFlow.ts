@@ -1,8 +1,6 @@
 import welcomeMessage from "./welcome.js";
-import selectRegtype from "./regist/selectRegtype.js";
 import type { ConversationFlow } from "../types/Command.d.ts";
-import regBPJS from "./regist/regBPJS.js";
-import regUmum from "./regist/regUmum.js";
+import regFlow from "./routes/regist/reg.flow.js";
 
 const conversationFlow: ConversationFlow = {
     "msg.welcome": {
@@ -15,29 +13,11 @@ const conversationFlow: ConversationFlow = {
             },
         ]
     },
-    "reg.selectRegtype": {
-        handler: selectRegtype.handler,
-        awaitResponse: selectRegtype.parseResponse,
-        transitions: [
-            {
-                condition: (resp) => resp == 1,
-                nextRoute: "req.umum",
-            },
-            {
-                condition: (resp) => resp == 2,
-                nextRoute: "req.bpjs",
-            },
-        ]
-    },
-    "req.umum": {
-        handler: regUmum.handler,
-    },
-    "req.bpjs": {
-        handler: regBPJS.handler,
-    },
     "end": {
         handler: async () => { return ({ text: "Terima kasih sudah selesai" }) },
-    }
+    },
+    // spread the object to extract its properties
+    ...regFlow,
 
 };
 

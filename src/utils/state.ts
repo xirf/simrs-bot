@@ -24,7 +24,10 @@ class GlobalState {
             let query = `SELECT value FROM ${stateTable} WHERE key = $1`;
             const result = await this.db.query(query, [ key ]);
 
+            
             if (result.rows.length > 0) {
+                log.info(`Restoring state for key ${key}`, result.rows[ 0 ]);
+                
                 const value = result.rows[ 0 ].value;
                 this.cache.set(key, value, 3600); // Cache for 1 hour
                 return value;
@@ -46,6 +49,8 @@ class GlobalState {
                 query,
                 [ key, JSON.stringify(value) ]
             );
+
+            log.info(`Updating state for key ${key}`, value);
 
             this.cache.set(key, value, 3600); // Update the cache
         } catch (error) {

@@ -19,6 +19,13 @@
         "@typescript-eslint/no-unused-vars": "error",
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/explicit-module-boundary-types": "off",
-        "@typescript-eslint/no-empty-function": "on"
-    }
+        "@typescript-eslint/no-empty-function": "on",
+        "eol-last": [
+            "error",
+            "always"
+        ]
+    },
+    "ignorePatterns": [
+        "node_modules/"
+    ]
 }

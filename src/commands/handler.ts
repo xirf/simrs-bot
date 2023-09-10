@@ -13,6 +13,7 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
     try {
         const { sender } = await extractMessage(msg);
         let lastState = await state.get(sender);
+        let _userState = { ...lastState }
 
         if (!lastState) {
             // If there's no conversation state, start a new one with the initial route
@@ -37,6 +38,10 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
                 await state.clear(sender);
                 return;
 
+            } else if (typeof response === "object" && "error" in response) {
+
+                reply({ ...response.error }, sender);
+                return;
             }
 
 
@@ -60,16 +65,11 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
 
                         // update the state with the next route if present
                         if (conversationFlow[ transition.nextRoute ].transitions) {
-                            await state.update(sender, {
-                                lastRoutes: transition.nextRoute,
-                                awaitingResponse: true,
-                            });
-                        } else {
-                            await state.update(sender, {
-                                lastRoutes: "end",
-                                awaitingResponse: false,
-                            });
+                            _userState.lastRoutes = transition.nextRoute
+                            _userState.awaitingResponse = true
 
+                            await state.update(sender, _userState);
+                        } else {
                             // clear the state
                             await state.clear(sender);
                         }
@@ -105,10 +105,14 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
 
             if (routes.transitions) {
                 // If there's a transition, update the state with the next route
-                await state.update(sender, {
-                    lastRoutes: lastState.lastRoutes,
-                    awaitingResponse: true,
-                });
+            //     await state.update(sender, {
+            //         lastRoutes: lastState.lastRoutes,
+            //         awaitingResponse: true,
+            //     });
+                _userState.lastRoutes = lastState.lastRoutes
+                _userState.awaitingResponse = true
+                
+                await state.update(sender, _userState);
             }
         }
 
