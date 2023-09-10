@@ -1,7 +1,7 @@
 import { AnyMessageContent, WAMessage } from "@whiskeysockets/baileys";
 
 interface ConversationRoute {
-    handler: (msg: WAMessage) => Promise<AnyMessageContent>;
+    handler: (msg: WAMessage) => Promise<AnyMessageContent | AnyMessageContent[]>;
     awaitResponse?: (msg: WAMessage) => Promise<String | number | "batal" | "invalid" | any>;
     transitions?: {
         condition: (resp: String | number | any) => boolean;

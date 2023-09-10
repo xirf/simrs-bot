@@ -47,7 +47,16 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
                 for (const transition of routes.transitions) {
                     if (transition.condition(response)) {
                         // run the handler for the next route
-                        reply(await conversationFlow[ transition.nextRoute ].handler(msg), sender);
+
+                        let respondMessage = await conversationFlow[ transition.nextRoute ].handler(msg)
+                        // check if the respond is an array
+                        if (Array.isArray(respondMessage)) {
+                            for (const message of respondMessage) {
+                                reply(message, sender)
+                            }
+                        } else {
+                            reply(respondMessage, sender)
+                        }
 
                         // update the state with the next route if present
                         if (conversationFlow[ transition.nextRoute ].transitions) {
@@ -84,7 +93,16 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
             }
 
         } else {
-            reply(await routes.handler(msg), sender);
+
+            let respondMessage = await routes.handler(msg)
+            if (Array.isArray(respondMessage)) {
+                for (const message of respondMessage) {
+                    reply(message, sender)
+                }
+            } else {
+                reply(respondMessage, sender)
+            }
+
             if (routes.transitions) {
                 // If there's a transition, update the state with the next route
                 await state.update(sender, {

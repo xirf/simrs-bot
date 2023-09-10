@@ -2,6 +2,7 @@ import welcomeMessage from "./welcome.js";
 import selectRegtype from "./regist/selectRegtype.js";
 import type { ConversationFlow } from "../types/Command.d.ts";
 import regBPJS from "./regist/regBPJS.js";
+import regUmum from "./regist/regUmum.js";
 
 const conversationFlow: ConversationFlow = {
     "msg.welcome": {
@@ -29,7 +30,7 @@ const conversationFlow: ConversationFlow = {
         ]
     },
     "req.umum": {
-        handler: async () => { return ({ text: "Msg Handler 2" }) },
+        handler: regUmum.handler,
     },
     "req.bpjs": {
         handler: regBPJS.handler,
