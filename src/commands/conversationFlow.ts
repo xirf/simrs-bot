@@ -8,7 +8,7 @@ const conversationFlow: ConversationFlow = {
         awaitResponse: welcomeMessage.parseResponse,
         transitions: [
             {
-                condition: (num) => num === 1,
+                condition: (num) => num == 1,
                 nextRoute: "reg.selectRegtype",
             },
         ]

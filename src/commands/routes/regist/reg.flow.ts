@@ -20,6 +20,9 @@ const regFlow: ConversationFlow = {
     },
     ...umumFlow,
     ...bpjsFlow,
+    "end": {
+        handler: async () => { return ({ text: "Terima kasih sudah selesai" }) },
+    },
 }
 
 export default regFlow

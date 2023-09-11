@@ -1,4 +1,6 @@
 import { ConversationFlow } from "../../../../types/Command";
+import askConfirm from "./askConfirm";
+import confirmSuccess from "./confirmSuccess";
 import regUmum from "./regUmum";
 import selectDokter from "./selectDokter";
 import selectJadwal from "./selectJadwal";
@@ -47,8 +49,22 @@ const umumFlow: ConversationFlow = {
         ]
     },
     "reg.input.confirm": {
-        handler: async (_) => { return ({ text: "ok" }) },
-
+        handler: askConfirm.handler,
+        awaitResponse: askConfirm.parseResponse,
+        transitions: [
+            {
+                condition: (num) => num == 1,
+                nextRoute: "reg.input.confirm.success"
+            },
+            {
+                condition: (num) => num == 0,
+                nextRoute: "end"
+            }
+        ]
+    },
+    "reg.input.confirm.success": {
+        handler: confirmSuccess.handler,
+        // awaitResponse: confirmSuccess.parseResponse,
     }
 }
 

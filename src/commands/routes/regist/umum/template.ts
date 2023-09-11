@@ -41,7 +41,7 @@ async function generateMessage(
         if (objKey) {
             Object.keys(objKey).map(el => {
                 try {
-                    objToSend = userState(objKey[ el ])
+                    objToSend = userState[objKey[ el ]]
                 } catch (error) {
                     log.warn(`Failed to set object keys for ${sender}`, error)
                 }

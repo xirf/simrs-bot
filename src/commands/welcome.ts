@@ -2,7 +2,7 @@ import db from "../db/client";
 import log from "../utils/logger";
 import extractMessage from "../utils/extract";
 import parseTemplate from "../utils/parseTemplate";
-import { AnyMessageContent, WAMessage, toNumber } from "@whiskeysockets/baileys";
+import { AnyMessageContent, WAMessage } from "@whiskeysockets/baileys";
 import config from "../config";
 
 
@@ -54,7 +54,7 @@ async function parseResponse(msg: WAMessage): Promise<number> {
     let { text } = await extractMessage(msg);
 
     // get first number from the text
-    return toNumber(text.replace(/\D/g, ''))
+    return parseInt(text.replace(/\D/g, ''))
 }
 
 

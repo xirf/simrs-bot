@@ -1,4 +1,4 @@
-import { WAMessage } from "@whiskeysockets/baileys";
+import { WAMessage, delay } from "@whiskeysockets/baileys";
 import type { Reply } from "../types/Client.d.ts";
 import state from "../utils/state";
 import extractMessage from "../utils/extract.js";
@@ -56,7 +56,8 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
                         // check if the respond is an array
                         if (Array.isArray(respondMessage)) {
                             for (const message of respondMessage) {
-                                reply(message, sender)
+                                await reply(message, sender)
+                                await delay(1000);
                             }
                         } else {
                             reply(respondMessage, sender)
@@ -66,7 +67,6 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
                         if (conversationFlow[ transition.nextRoute ].transitions) {
                             lastState.awaitingResponse = true
                             lastState.lastRoutes = transition.nextRoute
-                            log.error("original state" + JSON.stringify(lastState));
 
                             await state.update(sender, lastState);
                         } else {
@@ -83,7 +83,7 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
                 if (!match) {
                     let query = `SELECT template from "public".${config.tables.template} where name='msg.err.invalidInput'`
                     let template = await db.query(query)
-                    let text = template.rows[ 0 ].template + "\n\n" + await routes.handler(msg);
+                    let text = template.rows[ 0 ].template;
 
 
                     reply({ text }, sender)

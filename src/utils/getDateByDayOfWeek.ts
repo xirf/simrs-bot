@@ -1,6 +1,6 @@
 import formatDate from "./formatDate";
 
-export function getDateByDayOfWeek(day: string): string {
+export default function getDateByDayOfWeek(day: string): string {
     let days = [ "minggu", "senin", "selasa", "rabu", "kamis", "jumat", "sabtu" ];
     let dayIndex = days.indexOf(day.toLowerCase());
 

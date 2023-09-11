@@ -44,7 +44,6 @@ async function handler(msg: WAMessage): Promise<AnyMessageContent> {
         await state.update(`data_${sender}`, userState);
 
 
-        log.warn(userState);
         return ({
             text: await parseTemplate(template.rows[ 0 ].template, {
                 jadwal: formattedJadwal,
@@ -124,7 +123,7 @@ async function parseResponse(_msg: WAMessage): ResponseHandler {
             id_jam: id_jam.rows[ 0 ].id_jam
         }
 
-        await userState.update(`data_${sender}`, userState)
+        await state.update(`data_${sender}`, userState);
 
         return 1;
 

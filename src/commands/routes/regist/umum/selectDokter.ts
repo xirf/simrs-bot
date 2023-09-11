@@ -8,12 +8,9 @@ const QUERY = {
     paramKey: "id_poli"
 }
 const PROPERTY_KEY = "dokter";
-const OBJKEY = {
-    poli: 'poli'
-}
 
 async function handler(msg: WAMessage): Promise<AnyMessageContent> {
-    return generateMessage(msg, TEMPLATE_NAME, QUERY, PROPERTY_KEY, OBJKEY);
+    return generateMessage(msg, TEMPLATE_NAME, QUERY, PROPERTY_KEY);
 }
 
 async function parseResponse(_msg: WAMessage): ResponseHandler {
