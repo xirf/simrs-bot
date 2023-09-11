@@ -104,9 +104,24 @@ async function parseResponse(_msg: WAMessage): ResponseHandler {
             }
         }
 
+
+        const id_hari = await db.query(
+            `SELECT id_hari from "public".jadwal_hari WHERE nama_hari=$1`,
+            [ userState.jadwal[ result ].hari ]
+        );
+
+        const id_jam = await db.query(
+            `SELECT id_jam from "public".jadwal_jam WHERE jam_mulai=$1 AND jam_selesai=$2`,
+            hour.split(" - ")
+        );
+
+
+
         userState.jadwal = {
             hari: userState.jadwal[ result ].hari,
-            jam: hour
+            jam: hour,
+            id_hari: id_hari.rows[ 0 ].id_hari,
+            id_jam: id_jam.rows[ 0 ].id_jam
         }
 
         await userState.update(`data_${sender}`, userState)

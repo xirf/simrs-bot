@@ -7,8 +7,6 @@ import state from "../../../../utils/state";
 
 async function handler(_msg): Promise<AnyMessageContent> {
     try {
-
-
         let template = await db.query(`SELECT template from "public".${config.tables.template} WHERE name='msg.reg.umum' OR name='msg.reg.umum.img'`);
         let textTemplate = template.rows[ 0 ].template;
         let imgTemplate = template.rows[ 1 ].template;
@@ -72,7 +70,7 @@ async function parseResponse(msg: WAMessage): ResponseHandler {
         userState[ 'noRM' ] = text
         userState[ 'name' ] = result.rows[ 0 ].nama
 
-        await state.update(sender, userState)
+        await state.update(`data_${sender}`, userState)
         return 1
 
     }

@@ -5,8 +5,8 @@ import log from "../../../../utils/logger";
 import extractMessage from "../../../../utils/extract";
 import config from "../../../../config";
 import parseTemplate from "../../../../utils/parseTemplate";
-import formatDate from "../../../../utils/formatDate";
 import { ResponseHandler } from "../../../../types/Command";
+import getDateByDayOfWeek from "../../../../utils/getDateByDayOfWeek";
 
 
 async function handler(msg): Promise<AnyMessageContent> {
@@ -57,19 +57,6 @@ async function parseResponse(msg): ResponseHandler {
             }
         })
     }
-}
-
-
-
-
-function getDateByDayOfWeek(day: string): string {
-    let days = [ "minggu", "senin", "selasa", "rabu", "kamis", "jumat", "sabtu" ]
-    let dayIndex = days.indexOf(day.toLowerCase())
-
-    let date = new Date()
-    let currentDay = date.getDay()
-    let distance = dayIndex - currentDay
-    return formatDate((new Date(date.setDate(date.getDate() + distance))).toISOString().split('T')[ 0 ])
 }
 
 
