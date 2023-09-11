@@ -1,5 +1,6 @@
 import { ConversationFlow } from "../../../../types/Command";
 import regUmum from "./regUmum";
+import selectDokter from "./selectDokter";
 import selectPoli from "./selectPoli";
 
 
@@ -23,7 +24,19 @@ const umumFlow: ConversationFlow = {
                 nextRoute: "reg.input.dokter"
             }
         ]
+    },
+    "reg.input.dokter": {
+        handler: selectDokter.handler,
+        awaitResponse: selectDokter.parseResponse,
+        transitions: [
+            {
+                condition: (_) => true,
+                nextRoute: "reg.input.jadwal"
+            }
+        ]
+
     }
+
 
 }
 

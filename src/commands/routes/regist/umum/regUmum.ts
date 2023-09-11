@@ -65,12 +65,12 @@ async function parseResponse(msg: WAMessage): ResponseHandler {
             }
         })
     } else {
-        let userState = await state.get(sender)
+        let userState = await state.get("data_" + sender) ?? {}
 
         // save the noRM and name to the state 
         // be careful when using userState, it's not a copy, it's a reference
-        userState.noRM = text
-        userState.name = result.rows[ 0 ].nama
+        userState[ 'noRM' ] = text
+        userState[ 'nama' ] = result.rows[ 0 ].nama
 
         await state.update(sender, userState)
         return 1

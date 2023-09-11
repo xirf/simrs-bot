@@ -4,7 +4,6 @@ import extractMessage from "../utils/extract";
 import parseTemplate from "../utils/parseTemplate";
 import { AnyMessageContent, WAMessage, toNumber } from "@whiskeysockets/baileys";
 import config from "../config";
-import formatDate from "../utils/formatDate";
 
 
 function handler(msg: WAMessage): Promise<AnyMessageContent> {
@@ -38,7 +37,7 @@ function handler(msg: WAMessage): Promise<AnyMessageContent> {
             let message = parseTemplate(templateMsg.rows[ 0 ].template, {
                 name: result.rows[ 0 ]?.nama ?? pushName,
                 kontrol: result.rows[ 0 ]?.tgl_kontrol,
-                time: formatDate((new Date()).toISOString())
+                time: getTimeOfDay()
             });
 
             // return the message
@@ -58,6 +57,20 @@ async function parseResponse(msg: WAMessage): Promise<number> {
     return toNumber(text.replace(/\D/g, ''))
 }
 
+
+function getTimeOfDay(): string {
+    const currentTime = new Date().getHours();
+
+    if (currentTime >= 5 && currentTime < 11) {
+        return "pagi";
+    } else if (currentTime >= 11 && currentTime < 15) {
+        return "siang";
+    } else if (currentTime >= 15 && currentTime < 18) {
+        return "sore";
+    } else {
+        return "malam";
+    }
+}
 export default {
     handler,
     parseResponse

@@ -15,25 +15,31 @@ import log from "../../../../utils/logger";
 async function generateMessage(
     msg: WAMessage,
     templateName: string,
-    query: string,
+    query: { query: string, paramKey?: string },
     propertyKey: string
 ): Promise<AnyMessageContent> {
     try {
         const { sender } = await extractMessage(msg);
-        const userState = await state.get(sender);
+        const userState = await state.get("data_" + sender) ?? {};
 
-        const result = await db.query(query, [ userState[ propertyKey ] ]);
+
+        let result = await db.query(query.query, query.paramKey ? [ userState[ query.paramKey ] ] : null);
+
+        // get the template and parse it
         const template = await db.query(`SELECT template FROM "public".${config.tables.template} WHERE name='${templateName}'`);
-
         const formattedItems = result.rows.map((item, index) => `${index + 1}. ${item[ propertyKey ]}`);
 
-        userState[ propertyKey ] = result.rows;
-        await state.update(sender, userState);
+
         let objToSend = {
-            name: userState.nama,
+            nama: userState.nama,
         };
 
+        // add the formatted items to the object to send it will be used in the template
         objToSend[ propertyKey ] = formattedItems.join("\n");
+
+        // update the state
+        userState[ propertyKey ] = result.rows;
+        await state.update(`data_${sender}`, userState);
 
         return ({
             text: parseTemplate(template.rows[ 0 ].template, objToSend),
@@ -43,7 +49,7 @@ async function generateMessage(
     } catch (error) {
         log.error(error);
         return {
-            text: "Terjadi kesalahan, silakan hubungi admin",
+            text: "Terjadi kesalahan, \n\nJangan Khawatir kami sudah melaporkan masalah ini ke admin",
         };
     }
 }
@@ -51,7 +57,8 @@ async function generateMessage(
 async function parse(_msg: WAMessage, propertyKey: string): Promise<ResponseHandler> {
     try {
         const { text, sender } = await extractMessage(_msg);
-        const userState = await state.get(sender);
+
+        const userState = await state.get('data_' + sender) ?? {};
 
         const items = userState[ propertyKey ];
         const index = parseInt(text) - 1;
@@ -64,18 +71,19 @@ async function parse(_msg: WAMessage, propertyKey: string): Promise<ResponseHand
             };
         }
 
-        const { [ propertyKey ]: id, nama } = items[ index ];
+        console.log(userState, propertyKey, items, index);
+        const item = items[ index ];
 
-        userState[ `id_${propertyKey}` ] = id;
-        userState[ propertyKey ] = nama;
+        userState[ `id_${propertyKey}` ] = item[ `id_${propertyKey}` ];
+        userState[ propertyKey ] = item[ propertyKey ];
 
-        await state.update(sender, userState);
+        await state.update("data_" + sender, userState);
         return 1;
     } catch (error) {
         log.error(error);
         return {
             error: {
-                text: "Terjadi kesalahan, \n\nJangan Khawatir kami sudah melaporkan masalah ini ke admin",
+                text: "Ups😢 ada masalah nih, \n\nJangan Khawatir kami sudah melaporkan masalah ini ke admin",
             },
         };
     }

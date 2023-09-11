@@ -13,15 +13,14 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
     try {
         const { sender } = await extractMessage(msg);
         let lastState = await state.get(sender);
-        let _userState = { ...lastState }
 
-        if (!lastState) {
-            // If there's no conversation state, start a new one with the initial route
-            await state.update(sender, {
+        // check if empty object
+        if (!lastState || Object.keys(lastState).length === 0) {
+            log.error("last state is empty");
+            lastState = {
                 lastRoutes: "msg.welcome",
-                awaitResponse: false,
-            });
-            lastState = await state.get(sender);
+                awaitingResponse: false,
+            }
         }
 
         // Get the current route from the state
@@ -65,10 +64,11 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
 
                         // update the state with the next route if present
                         if (conversationFlow[ transition.nextRoute ].transitions) {
-                            _userState.lastRoutes = transition.nextRoute
-                            _userState.awaitingResponse = true
+                            lastState.awaitingResponse = true
+                            lastState.lastRoutes = transition.nextRoute
+                            log.error("original state" + JSON.stringify(lastState));
 
-                            await state.update(sender, _userState);
+                            await state.update(sender, lastState);
                         } else {
                             // clear the state
                             await state.clear(sender);
@@ -93,7 +93,13 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
             }
 
         } else {
-
+            // handle if the handler is not available 
+            if (!routes.handler) {
+                let templateMsg = await db.query(`SELECT template from "public".${config.tables.template} where name='msg.err.endOfRoute'`)
+                await state.clear(sender)
+                return reply({ text: templateMsg.rows[ 0 ].template }, sender)
+            }
+                
             let respondMessage = await routes.handler(msg)
             if (Array.isArray(respondMessage)) {
                 for (const message of respondMessage) {
@@ -104,21 +110,14 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
             }
 
             if (routes.transitions) {
-                // If there's a transition, update the state with the next route
-            //     await state.update(sender, {
-            //         lastRoutes: lastState.lastRoutes,
-            //         awaitingResponse: true,
-            //     });
-                _userState.lastRoutes = lastState.lastRoutes
-                _userState.awaitingResponse = true
-                
-                await state.update(sender, _userState);
+                lastState.awaitingResponse = true
+                lastState.lastRoutes = lastState.lastRoutes
+                await state.update(sender, lastState);
             }
         }
 
         return;
     } catch (error) {
-        // Handle errors if needed
         log.error(error);
     }
 }
