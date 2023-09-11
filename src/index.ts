@@ -34,4 +34,7 @@ import handler from "./commands/handler";
         if (msg.key.fromMe) return;
         await handler(msg, sendMessageWTyping)
     })
+
+    // make sock global
+    globalThis.sock = sock;
 })()
