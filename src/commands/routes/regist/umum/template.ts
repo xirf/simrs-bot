@@ -16,7 +16,8 @@ async function generateMessage(
     msg: WAMessage,
     templateName: string,
     query: { query: string, paramKey?: string },
-    propertyKey: string
+    propertyKey: string,
+    objKey?: Record<string, string>
 ): Promise<AnyMessageContent> {
     try {
         const { sender } = await extractMessage(msg);
@@ -31,11 +32,21 @@ async function generateMessage(
 
 
         let objToSend = {
-            nama: userState.nama,
+            nama: userState.name,
         };
 
         // add the formatted items to the object to send it will be used in the template
         objToSend[ propertyKey ] = formattedItems.join("\n");
+
+        if (objKey) {
+            Object.keys(objKey).map(el => {
+                try {
+                    objToSend = userState(objKey[ el ])
+                } catch (error) {
+                    log.warn(`Failed to set object keys for ${sender}`, error)
+                }
+            })
+        }
 
         // update the state
         userState[ propertyKey ] = result.rows;
@@ -71,7 +82,6 @@ async function parse(_msg: WAMessage, propertyKey: string): Promise<ResponseHand
             };
         }
 
-        console.log(userState, propertyKey, items, index);
         const item = items[ index ];
 
         userState[ `id_${propertyKey}` ] = item[ `id_${propertyKey}` ];
