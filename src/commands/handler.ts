@@ -1,4 +1,4 @@
-import { WAMessage, delay } from "@whiskeysockets/baileys";
+import { WAMessage } from "@whiskeysockets/baileys";
 import type { Reply } from "../types/Client.d.ts";
 import state from "../utils/state";
 import extractMessage from "../utils/extract.js";
@@ -55,10 +55,13 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
                         let respondMessage = await conversationFlow[ transition.nextRoute ].handler(msg)
                         // check if the respond is an array
                         if (Array.isArray(respondMessage)) {
-                            for (const message of respondMessage) {
-                                await reply(message, sender)
-                                await delay(1000);
-                            }
+                            // loop through the array and set 500ms delay
+                            respondMessage.forEach((message, index) => {
+                                setTimeout(() => {
+                                    reply(message, sender)
+                                }, 500 * index)
+                            });
+
                         } else {
                             reply(respondMessage, sender)
                         }

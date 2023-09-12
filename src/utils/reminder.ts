@@ -1,43 +1,53 @@
-import { AnyMessageContent } from '@whiskeysockets/baileys';
-import cron from 'node-cron';
-import log from './logger';
+import cron from "node-cron";
+import log from "./logger";
 
 
-class Reminder {
-    private reminders: Map<string, cron.ScheduledTask>;
-
-    constructor() {
-        this.reminders = new Map();
-    }
-
-    addReminder(cronExpression: string, msg: AnyMessageContent, recipient: string): void {
-
-        log.info(`Adding reminder for ${recipient} with cron expression ${cronExpression}`);
-        let taskName = `reminder_${recipient}_${this.reminders.size + 1}`;
-
-        // Schedule task
-        let task = cron.schedule(cronExpression, () => {
-            if (global.sock) {
-                global.sock.sendMessage(recipient, msg);
-            }
-
-            this.removeReminder(taskName);
-            this.reminders.delete(taskName);
-        });
-
-        this.reminders.set(taskName, task);
-    }
-
-    removeReminder(reminderName: string): void {
-        const reminder = this.reminders.get(reminderName);
-        if (reminder) {
-            reminder.stop();
-            this.reminders.delete(reminderName);
-            console.log(`Reminder "${reminderName}" removed.`);
-        } else {
-            console.log(`Reminder "${reminderName}" does not exist.`);
-        }
-    }
+interface TaskType {
+    name: string;   
+    task: () => void;
+    cronExpression: string;
+    cronJob: any;
 }
 
-export default new Reminder();
+class Task {
+    protected tasks: any[];
+
+	constructor() {
+		this.tasks = [];
+    }
+    
+    addTask(name: string, task: () => void, cronExpression: string) {
+        
+        if (!cron.validate(cronExpression)) {
+            throw new Error("Invalid cron expression");
+        }
+
+		const taskObj: any = {
+			name,
+			task,
+			cronExpression,
+			cronJob: null,
+		};
+		this.tasks.push(taskObj);
+		this.startTask(taskObj);
+    }
+    
+	startTask(taskObj: TaskType) {
+		taskObj.cronJob = cron.schedule(taskObj.cronExpression, async () => {
+			try {
+				await taskObj.task();
+				this.deleteTask(taskObj);
+			} catch (error) {
+				log.error(error);
+			}
+		});
+    }
+    
+	deleteTask(taskObj: TaskType) {
+		taskObj.cronJob.stop();
+		delete taskObj.cronJob;
+		this.tasks = this.tasks.filter((task) => task.name !== taskObj.name);
+	}
+}
+
+export default new Task();

@@ -65,9 +65,16 @@ async function generateMessage(
     }
 }
 
-async function parse(_msg: WAMessage, propertyKey: string): Promise<ResponseHandler> {
+async function parse(msg: WAMessage, propertyKey: string): Promise<ResponseHandler> {
     try {
-        const { text, sender } = await extractMessage(_msg);
+        const { text, sender } = await extractMessage(msg);
+
+        let falseStatement = [ "tidak", "tdk", "t", "no", "n", "batal", "salah" ]
+        
+        if (text.toLocaleLowerCase() in falseStatement) {
+            return "cancel" 
+        }
+
 
         const userState = await state.get('data_' + sender) ?? {};
 

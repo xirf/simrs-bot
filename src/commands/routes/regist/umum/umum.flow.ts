@@ -23,8 +23,12 @@ const umumFlow: ConversationFlow = {
         awaitResponse: selectPoli.parseResponse,
         transitions: [
             {
-                condition: (_) => true,
+                condition: (num) => num == 1,
                 nextRoute: "reg.input.dokter"
+            },
+            {
+                condition: (state) => state == "cancel",
+                nextRoute: "msg.reg.cancel"
             }
         ]
     },
@@ -58,13 +62,12 @@ const umumFlow: ConversationFlow = {
             },
             {
                 condition: (num) => num == 0,
-                nextRoute: "end"
+                nextRoute: "msg.reg.cancel"
             }
         ]
     },
     "reg.input.confirm.success": {
         handler: confirmSuccess.handler,
-        // awaitResponse: confirmSuccess.parseResponse,
     }
 }
 

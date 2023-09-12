@@ -25,7 +25,7 @@ async function handler(msg): Promise<AnyMessageContent> {
             AND id_jam=$3 
             AND id_unit=$4 
             AND id_dokter=$5
-        SORT BY antrian DESC
+        ORDER BY antrian DESC
         `;
         let result = await db.query(query, [
             nextDate,
@@ -48,21 +48,20 @@ async function handler(msg): Promise<AnyMessageContent> {
             id_unit,
             id_dokter,
             tgl_daftar,
-            anrian,
+            antrian,
             status_check_in
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *
         `;
 
         let id_booking = (result.rows[ 0 ]?.id_booking ?? 0).toString().padStart(4, "0");
-
         let saveBooking = await db.query(query2, [
-            noRM,
+            userState.noRM,
             nextDate,
             id_booking,
             jadwal.id_hari,
             jadwal.id_jam,
-            id_poli,
-            dokter.id_dokter,
+            userState.id_poli,
+            userState.id_dokter,
             new Date(),
             queue,
             0
