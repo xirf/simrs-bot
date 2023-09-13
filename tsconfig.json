@@ -17,6 +17,6 @@
     "noUnusedParameters": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/job/birthday.ts", "src/job/checkUp.ts"],
   "exclude": ["node_modules", "dist"]
 }

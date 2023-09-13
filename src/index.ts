@@ -4,6 +4,8 @@ import db from "./db/client";
 import startSock from "./lib/whatsapp/waclient";
 import handler from "./commands/handler";
 import extractMessage from "./utils/extract";
+import cron from "node-cron";
+import fs from "fs";
 
 // Just to make sure that the environment variables are loaded
 log.info("Loading environment variables...");
@@ -44,6 +46,33 @@ log.info("Running in " + process.env.NODE_ENV || "Development" + " mode");
         // how conversation will be flow 
         await handler(msg, sendMessageWTyping)
     })
+
+
+
+    cron.schedule("*/15 * * * * *", async () => {  // At 00:00, every day
+        log.info("Running CronJob Tasks");
+
+        // read the job directory and get all the jobs
+        let jobs = fs.readdirSync("./src/job").map((file) => file.split(".")[ 0 ]);
+        const jobMap = new Map();
+
+        for (let job of jobs) {
+            jobMap.set(job, job)
+        }
+
+        // run the job
+        for (let job of jobMap.values()) {
+            try {
+                log.info("Running job " + job);
+                let jobModule = await import(`./job/${job}`);
+                await jobModule.default(sock, sendMessageWTyping);
+            } catch (error) {
+                log.error("Failed to run job " + job);
+                log.error(error)
+            }
+        }
+    });
+
 
     // make sock global
     globalThis.sock = sock;
