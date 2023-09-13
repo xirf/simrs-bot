@@ -1,6 +1,7 @@
 import welcomeMessage from "./welcome.js";
 import type { ConversationFlow } from "../types/Command.d.ts";
 import regFlow from "./routes/regist/reg.flow.js";
+import scheduleFlow from "./routes/checkSchedule/schedule.flow.js";
 
 const conversationFlow: ConversationFlow = {
     "msg.welcome": {
@@ -11,6 +12,10 @@ const conversationFlow: ConversationFlow = {
                 condition: (num) => num == 1,
                 nextRoute: "reg.selectRegtype",
             },
+            {
+                condition: (num) => num == 2,
+                nextRoute: "schedule.selectSchedule",
+            }
         ]
     },
     "end": {
@@ -18,6 +23,7 @@ const conversationFlow: ConversationFlow = {
     },
     // spread the object to extract its properties
     ...regFlow,
+    ...scheduleFlow,
 
 };
 
