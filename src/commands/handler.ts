@@ -16,7 +16,7 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
 
         // check if empty object
         if (!lastState || Object.keys(lastState).length === 0) {
-            log.error("last state is empty");
+            log.warn(`No state found for ${sender}, setting the state to default`);
             lastState = {
                 lastRoutes: "msg.welcome",
                 awaitingResponse: false,

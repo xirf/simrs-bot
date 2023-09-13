@@ -11,8 +11,6 @@ async function handler(msg: WAMessage): Promise<AnyMessageContent> {
         let { sender } = await extractMessage(msg);
         let userState = await state.get(`data_${sender}`);
 
-        log.error(JSON.stringify(userState, null, 2));
-
         let query = `
         SELECT
             jadwal_hari.nama_hari AS hari,
@@ -34,8 +32,6 @@ async function handler(msg: WAMessage): Promise<AnyMessageContent> {
         let template = await db.query(`SELECT template FROM "public".${config.tables.template} WHERE name='schedule'`)
         let jadwal = await db.query(query, [ userState.dokter.id ]);
         let formattedJadwal = formatJadwal(jadwal.rows);
-
-        log.error(JSON.stringify(jadwal.rows, null, 2));
 
         return ({
             text: await parseTemplate(template.rows[ 0 ].template, {

@@ -49,7 +49,8 @@ log.info("Running in " + process.env.NODE_ENV || "Development" + " mode");
 
 
 
-    cron.schedule("*/15 * * * * *", async () => {  // At 00:00, every day
+    // Every second, every minute, between 06:00 and 06:59, every day
+    cron.schedule("* * 6 * * *", async () => {
         log.info("Running CronJob Tasks");
 
         // read the job directory and get all the jobs

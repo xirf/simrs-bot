@@ -80,7 +80,6 @@ async function parseResponse(msg): ResponseHandler {
         userState.dokter = dokter;
         await state.update(`data_${sender}`, userState);
 
-        log.error(JSON.stringify(userState, null, 2))
         return "next"
     } catch (error) {
         return ({
