@@ -1,13 +1,14 @@
 import { ConversationFlow } from "../../../types/Command";
 import getName from "./getName";
 import showDoctor from "./showDoctor";
+import showSchedules from "./showSchedules";
 
 
 
 const scheduleFlow: ConversationFlow = {
     "schedule.selectSchedule": {
         handler: getName.handler,
-        awaitResponse: async (_) => 1,
+        awaitResponse: getName.parseResponse,
         transitions: [
             {
                 condition: (_) => true,
@@ -30,9 +31,8 @@ const scheduleFlow: ConversationFlow = {
         ]
     },
     "schedule.showSchedules": {
-        handler: async () => { return ({ text: "ok" }) }
+        handler: showSchedules
     }
-
 }
 
 

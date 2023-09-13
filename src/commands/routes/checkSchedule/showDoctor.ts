@@ -14,6 +14,7 @@ async function handler(msg): Promise<AnyMessageContent> {
         let { sender, text } = await extractMessage(msg);
         let userState = await state.get(`data_${sender}`) ?? {};
 
+
         let query = `SELECT template from public.${config.tables.template} WHERE name='schedule.showDoctor'`;
         let template = await db.query(query);
 
@@ -28,18 +29,19 @@ async function handler(msg): Promise<AnyMessageContent> {
 
         let similarity = getSimilarity(text, 0.1, dokter.map((dokter) => dokter.name))
 
-        let listDokterFiltered = similarity.map((result, index) => {
-            return `${index + 1}. ${result.name}`
-        })
 
-        // get first 20 result
-        userState.dokter = dokter.slice(0, 10);
+        // filter dokter by similarity
+        userState.dokter = similarity.map((result) => {
+            return dokter.find((dokter) => dokter.name === result.name)
+        }).slice(0, 10);
 
         await state.update(`data_${sender}`, userState);
 
         return ({
             text: await parseTemplate(template.rows[ 0 ].template, {
-                dokter: listDokterFiltered.splice(0, 10).join("\n"),
+                dokter: userState.dokter.map((dokter, index) => {
+                    return `${index + 1}. ${dokter.name}`
+                }).join("\n")
             }),
         })
 
@@ -76,7 +78,7 @@ async function parseResponse(msg): ResponseHandler {
         let dokter = userState.dokter[ Number(text) - 1 ];
 
         userState.dokter = dokter;
-        await state.update(`data_${msg.sender}`, userState);
+        await state.update(`data_${sender}`, userState);
 
         log.error(JSON.stringify(userState, null, 2))
         return "next"

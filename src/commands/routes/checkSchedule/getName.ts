@@ -1,9 +1,10 @@
 import db from "../../../db/client";
 import config from "../../../config";
 import extractMessage from "../../../utils/extract";
-import { AnyMessageContent } from "@whiskeysockets/baileys";
+import { AnyMessageContent, WAMessage } from "@whiskeysockets/baileys";
 import state from "../../../utils/state";
 import log from "../../../utils/logger";
+import { ResponseHandler } from "../../../types/Command";
 
 
 async function handler(msg): Promise<AnyMessageContent> {
@@ -29,6 +30,23 @@ async function handler(msg): Promise<AnyMessageContent> {
     }
 }
 
+async function parseResponse(msg: WAMessage): ResponseHandler {
+    let { text } = await extractMessage(msg);
+
+    // check if text is a number
+    if (text.match(/^\d+$/)) {
+        return {
+            error: {
+                text: "Mohon masukkan nama dokter dengan benar"
+            }
+        }
+    }
+
+    return 1;
+
+}
+
 export default {
-    handler
+    handler,
+    parseResponse
 }

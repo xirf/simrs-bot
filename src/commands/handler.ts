@@ -102,7 +102,7 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
                 await state.clear(sender)
                 return reply({ text: templateMsg.rows[ 0 ].template }, sender)
             }
-                
+
             let respondMessage = await routes.handler(msg)
             if (Array.isArray(respondMessage)) {
                 for (const message of respondMessage) {
@@ -116,6 +116,8 @@ export default async function handler(msg: WAMessage, reply: Reply): Promise<voi
                 lastState.awaitingResponse = true
                 lastState.lastRoutes = lastState.lastRoutes
                 await state.update(sender, lastState);
+            } else {
+                await state.clear(sender);
             }
         }
 
