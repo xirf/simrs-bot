@@ -1,9 +1,9 @@
 import { Client } from 'pg';
 import { BufferJSON, initAuthCreds, proto } from '@whiskeysockets/baileys';
 import type { AuthenticationCreds, SignalDataTypeMap } from '@whiskeysockets/baileys';
-import type { ClientAuth } from '../types/Client';
-import log from '../utils/logger';
-import config from '../config';
+import type { ClientAuth } from '../../types/Client';
+import log from '../../utils/logger';
+import config from '../../config';
 const table = config.tables.sessions;
 
 
