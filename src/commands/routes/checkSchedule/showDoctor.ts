@@ -17,16 +17,16 @@ async function handler(msg): Promise<AnyMessageContent> {
         let query = `SELECT template from public.${config.tables.template} WHERE name='schedule.showDoctor'`;
         let template = await db.query(query);
 
-        let listDokter = await db.query(`SELECT di_dokter, nama_dokter FROM public.dokter`);
+        let listDokter = await db.query(`SELECT id_dokter, nama_dokter FROM public.dokter`);
 
         let dokter = listDokter.rows.map((dokter) => {
             return {
                 name: dokter.nama_dokter,
-                id: dokter.di_dokter,
+                id: dokter.id_dokter,
             }
         });
 
-        let similarity = getSimilarity(text, 0.25, dokter.map((dokter) => dokter.name))
+        let similarity = getSimilarity(text, 0.1, dokter.map((dokter) => dokter.name))
 
         let listDokterFiltered = similarity.map((result, index) => {
             return `${index + 1}. ${result.name}`
@@ -54,14 +54,17 @@ async function handler(msg): Promise<AnyMessageContent> {
 
 async function parseResponse(msg): ResponseHandler {
     try {
-        let { text } = await extractMessage(msg)
+        let { text, sender } = await extractMessage(msg)
+
+        let number = Number(text);
 
         // check if its number
-        if (!isNaN(Number(text))) {
+        if (!number || number < 0 || !Number.isInteger(number)) {
             return "retry"
         }
 
-        let userState = await state.get(`data_${msg.sender}`);
+        let userState = await state.get(`data_${sender}`);
+
         if (userState.dokter.length < (Number(text) - 1)) {
             return ({
                 error: {
@@ -74,6 +77,8 @@ async function parseResponse(msg): ResponseHandler {
 
         userState.dokter = dokter;
         await state.update(`data_${msg.sender}`, userState);
+
+        log.error(JSON.stringify(userState, null, 2))
         return "next"
     } catch (error) {
         return ({

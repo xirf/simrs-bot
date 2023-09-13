@@ -7,7 +7,8 @@ function getSimilarity(keyword: string, threshold: number = 0.25, dict: string[]
     let result: Similarity[] = []
 
     for (const item of dict) {
-        const distance = calculateLevenshteinDistance(keyword, item)
+
+        const distance = calculateLevenshteinDistance(keyword.toLowerCase(), item.toLocaleLowerCase())
         const similarity = 1 - distance / Math.max(keyword.length, item.length)
 
         result.push({

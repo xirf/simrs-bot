@@ -1,11 +1,11 @@
 import { Boom } from '@hapi/boom'
 import NodeCache from 'node-cache'
-import pino from '../utils/logger'
-import { Reply } from '../types/Client'
-import auth from '../lib/session'
-import db from '../db/client'
+import pino from '../../utils/logger'
+import { Reply } from '../../types/Client'
+import auth from './session'
+import db from '../../db/client'
 import qrCode from "qrcode-terminal"
-import log from '../utils/logger'
+import log from '../../utils/logger'
 
 import makeWASocket, {
     delay,

@@ -29,7 +29,10 @@ const scheduleFlow: ConversationFlow = {
             }
         ]
     },
-    
+    "schedule.showSchedules": {
+        handler: async () => { return ({ text: "ok" }) }
+    }
+
 }
 
 

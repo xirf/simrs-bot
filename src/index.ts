@@ -1,22 +1,12 @@
+require("dotenv").config();
 import log from "./utils/logger";
+import db from "./db/client";
+import startSock from "./lib/whatsapp/waclient";
+import handler from "./commands/handler";
 
 // Just to make sure that the environment variables are loaded
 log.info("Loading environment variables...");
-require("dotenv").config({
-    override: !1,
-});
 log.info("Running in " + process.env.NODE_ENV || "Development" + " mode");
-
-
-// Then we can start everything
-// the db isnt encapsulated in a function because it needs to be imported 
-// in other files without the need to call a function first
-import db from "./db/client";
-
-
-import startSock from "./lib/waclient";
-import handler from "./commands/handler";
-
 
 
 (async () => {
