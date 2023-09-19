@@ -6,6 +6,7 @@ import handler from "./commands/handler";
 import extractMessage from "./utils/extract";
 import cron from "node-cron";
 import fs from "fs";
+import config from "./config";
 
 // Just to make sure that the environment variables are loaded
 log.info("Loading environment variables...");
@@ -21,29 +22,34 @@ log.info("Running in " + process.env.NODE_ENV || "Development" + " mode");
     const { sock, sendMessageWTyping } = await startSock();
 
     sock.ev.on("messages.upsert", async (m) => {
-        let msg = m.messages[ 0 ]
+        try {
 
-        if (msg.key.fromMe) return;
+            let msg = m.messages[0]
 
-        // get the text from the message
-        let { text } = await extractMessage(msg);
+            if (msg.key.fromMe) return;
 
-        // You can simply catch the message like this
-        let thanks = [ "terima kasih", "makasih", "thanks", "thank you", "terimakasih", "terima kasih banyak", "ty", "thx", "tq", "tks", "makasi", "makasih banyak", "makasih ya", ]
+            // get the text from the message
+            let { text } = await extractMessage(msg);
 
-        if (thanks.includes(text.toLowerCase())) {
-            let template = await db.query(`SELECT template FROM "public".${process.env.TABLE_TEMPLATE} WHERE name='thanks'`)
-            sendMessageWTyping({
-                text: template.rows[ 0 ].template ?? "Sama-sama 😇"
-            }, msg.key.remoteJid)
-            return;
+            // You can simply catch the message like this
+            let thanks = ["terima kasih", "makasih", "thanks", "thank you", "terimakasih", "terima kasih banyak", "ty", "thx", "tq", "tks", "makasi", "makasih banyak", "makasih ya",]
+
+            if (thanks.includes(text.toLowerCase())) {
+                let template = await db.query(`SELECT template FROM "public".${config.tables.template} WHERE name='thanks'`);
+                sendMessageWTyping({
+                    text: template.rows[0].template ?? "Sama-sama 😇"
+                }, msg.key.remoteJid)
+                return;
+            }
+
+
+            // or handling it with handler
+            // this will make the code more readable yet you can decide 
+            // how conversation will be flow 
+            await handler(msg, sendMessageWTyping)
+        } catch (error) {
+            log.error(error);
         }
-
-
-        // or handling it with handler
-        // this will make the code more readable yet you can decide 
-        // how conversation will be flow 
-        await handler(msg, sendMessageWTyping)
     })
 
 
@@ -53,7 +59,7 @@ log.info("Running in " + process.env.NODE_ENV || "Development" + " mode");
         log.info("Running CronJob Tasks");
 
         // read the job directory and get all the jobs
-        let jobs = fs.readdirSync("./src/job").map((file) => file.split(".")[ 0 ]);
+        let jobs = fs.readdirSync("./src/job").map((file) => file.split(".")[0]);
         const jobMap = new Map();
 
         for (let job of jobs) {
