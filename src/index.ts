@@ -22,7 +22,6 @@ log.info("Running in " + process.env.NODE_ENV || "Development" + " mode");
 
     sock.ev.on("messages.upsert", async (m) => {
         let msg = m.messages[ 0 ]
-        console.log(JSON.stringify(msg, null, 2))
 
         if (msg.key.fromMe) return;
 

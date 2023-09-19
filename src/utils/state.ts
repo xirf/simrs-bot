@@ -1,6 +1,5 @@
 import NodeCache from 'node-cache';
 import log from './logger';
-import { writeFileSync } from 'fs';
 
 class GlobalState {
     private cache: NodeCache;
@@ -24,9 +23,6 @@ class GlobalState {
 
     async update(key: string, value: any): Promise<void> {
         return new Promise((resolve, _) => {
-
-            writeFileSync(`dump/${key}`, JSON.stringify(value));
-
             this.cache.set(key, value);
             resolve();
         });
