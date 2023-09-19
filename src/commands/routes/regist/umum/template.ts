@@ -69,9 +69,9 @@ async function parse(msg: WAMessage, propertyKey: string): Promise<ResponseHandl
     try {
         const { text, sender } = await extractMessage(msg);
 
-        let falseStatement = [ "tidak", "tdk", "t", "no", "n", "batal", "salah" ]
+        let falseStatement = [ "tidak", "tdk", "no", "batal", "salah" ]
         
-        if (text.toLocaleLowerCase() in falseStatement) {
+        if (falseStatement.includes(text.toLocaleLowerCase())) {
             return "cancel" 
         }
 
